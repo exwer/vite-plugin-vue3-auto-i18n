@@ -70,8 +70,8 @@ import { ref } from 'vue'
 </template>
 ```
 
-Finally,this plugin will matches all the strings in the i18n configuration and replaces them automatically:
-
+Finally,this plugin will matches all the strings in the i18n configuration and replaces them automatically.
+For example,The above code will be converted to:
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
