@@ -6,11 +6,13 @@ const messages = {
   en: {
     message: {
       hello: 'hello world',
+      hi: 'hi',
     },
   },
   ch: {
     message: {
       hello: '你好，世界',
+      hi: '嗨',
     },
   },
 }

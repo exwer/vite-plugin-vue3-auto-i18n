@@ -38,14 +38,14 @@
   ],
   "sideEffects": false,
   "scripts": {
-    "vite:dev": "vite",
+    "start": "vite",
     "vite:build": "vite build",
     "build": "rimraf dist && unbuild",
     "dev": "unbuild --stub",
     "lint": "eslint .",
     "prepublishOnly": "nr build",
     "release": "bumpp --commit --push --tag && pnpm publish",
-    "start": "esno src/index.ts",
+    "esno": "esno src/index.ts",
     "test": "vitest",
     "typecheck": "tsc --noEmit"
   },
