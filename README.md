@@ -47,7 +47,7 @@ createApp(App).use(i18n).mount('#app')
 
 ```
 
-Then, add this plugin to your `vite.config.js`:
+Then, add this plugin to your `vite.config.js`, **note that the order of this plugin should come after vue plugin.**
 
 ```js
 import { defineConfig } from 'vite'
@@ -55,9 +55,8 @@ import vue from '@vitejs/plugin-vue'
 import VueI18n from 'vite-plugin-vue3-i18n'
 
 export default defineConfig({
-  plugins: [vue(),VueI18n()],
+  plugins: [vue(), VueI18n()],
 })
-
 ```
 
 write your code as usual, like:
@@ -65,7 +64,7 @@ write your code as usual, like:
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
-//...
+// ...
 </script>
 
 <template>
@@ -81,7 +80,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 const { t } = useI18n()
 
-//...
+// ...
 </script>
 
 <template>
