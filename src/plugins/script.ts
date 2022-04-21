@@ -1,5 +1,5 @@
 /// @ts-check
-import type { Program } from '@swc/core'
+import type { ImportDeclaration, ImportSpecifier, Program } from '@swc/core'
 import { Visitor } from '@swc/core/Visitor.js'
 
 /*
@@ -15,8 +15,37 @@ import { Visitor } from '@swc/core/Visitor.js'
   - if theres no 'computed' imported,import computed
 */
 class Script extends Visitor {
-  // TODO:transform script
   visitProgram(n: Program): Program {
+    let shouldImportI18n = true
+    let shouldImportRef = true
+    let shouldImportComputed = true
+    n.body.forEach((node) => {
+      if (node.type === 'ImportDeclaration') {
+        if (node.source.value === 'vue') {
+          node.specifiers.forEach((node) => {
+            if (node.type === 'ImportSpecifier' && node.imported) {
+              if (node.imported.type === 'Identifier') {
+                if (node.imported.value === 'ref')
+                  shouldImportRef = false
+                if (node.imported.value === 'computed')
+                  shouldImportComputed = false
+              }
+            }
+          })
+        }
+        if (node.source.value === 'vue-i18n')
+          shouldImportI18n = false
+      }
+    })
+    if (shouldImportI18n) {
+      // Import i18n
+    }
+    if (shouldImportRef) {
+      // import ref
+    }
+    if (shouldImportComputed) {
+      // import computed
+    }
     return n
   }
 }
