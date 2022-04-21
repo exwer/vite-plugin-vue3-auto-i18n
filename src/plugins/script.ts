@@ -1,5 +1,4 @@
-/// @ts-check
-import type { ImportDeclaration, ImportSpecifier, Program } from '@swc/core'
+import type { Program } from '@swc/core'
 import { Visitor } from '@swc/core/Visitor.js'
 
 /*
@@ -23,13 +22,15 @@ class Script extends Visitor {
       if (node.type === 'ImportDeclaration') {
         if (node.source.value === 'vue') {
           node.specifiers.forEach((node) => {
-            if (node.type === 'ImportSpecifier' && node.imported) {
-              if (node.imported.type === 'Identifier') {
-                if (node.imported.value === 'ref')
-                  shouldImportRef = false
-                if (node.imported.value === 'computed')
-                  shouldImportComputed = false
-              }
+            if (
+              node.type === 'ImportSpecifier'
+              && node.imported
+              && node.imported.type === 'Identifier'
+            ) {
+              if (node.imported.value === 'ref')
+                shouldImportRef = false
+              if (node.imported.value === 'computed')
+                shouldImportComputed = false
             }
           })
         }
