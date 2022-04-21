@@ -15,7 +15,9 @@ export async function start(sourceCode: string) {
       = descriptor.scriptSetup?.content ?? descriptor.script?.content
     const templateCode = descriptor.template?.content
     if (templateCode) {
-      // TODO:transform template
+      /*
+        replace matched pure node content with {{ $t('xxx') }}
+      */
       const { html: templateOut } = await postHtml().use((tree) => {
         tree.walk((node) => {
           return node
