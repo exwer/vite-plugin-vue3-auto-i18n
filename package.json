@@ -72,5 +72,8 @@
     "@swc/core": "^1.2.170",
     "@vue/compiler-sfc": "^3.2.33",
     "posthtml": "^0.16.6"
+  },
+  "peerDependencies": {
+    "vue-i18n": "^9"
   }
 }
