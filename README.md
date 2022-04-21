@@ -9,12 +9,16 @@ This plugin is still in development, and is not ready for use.
 
 **Auto import** Vue-i18n in every vue sfc files and **auto replace** i18n words in vue sfc files.
 
-All you need to do is add this plugin to your `vite.config.js`.
+- ✅
+- ❌
 
-## Usage
+## Installation
+
+```shell
+npm install -D [name]
+```
 
 First, make sure you have added [vue-i18n](https://vue-i18n.intlify.dev/) in your project.
-
 For example:
 
 ```typescript
@@ -47,7 +51,8 @@ createApp(App).use(i18n).mount('#app')
 
 ```
 
-Then, add this plugin to your `vite.config.js`, **note that the order of this plugin should come after vue plugin.**
+Then, add this plugin to your `vite.config.js`.
+**warning: The order of this plugin should come after vue plugin.**
 
 ```js
 import { defineConfig } from 'vite'
@@ -59,6 +64,7 @@ export default defineConfig({
 })
 ```
 
+## Usage
 write your code as usual, like:
 
 ```vue
