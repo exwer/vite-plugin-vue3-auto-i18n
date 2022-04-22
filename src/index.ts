@@ -1,7 +1,7 @@
 import * as VueCompiler from '@vue/compiler-sfc'
-import { transformSync } from '@swc/core'
 import postHtml from 'posthtml'
-import { ScriptPlugin } from './plugins/script'
+import babel, { transformAsync } from '@babel/core'
+import ScriptPlugin from './plugins/script'
 export async function start(sourceCode: string) {
   let result = sourceCode
   // 匹配模板内容
@@ -18,18 +18,21 @@ export async function start(sourceCode: string) {
       /*
         replace matched pure node content with {{ $t('xxx') }}
       */
-      const { html: templateOut } = await postHtml().use((tree) => {
-        tree.walk((node) => {
-          return node
+      const { html: templateOut } = await postHtml()
+        .use((tree) => {
+          tree.walk((node) => {
+            return node
+          })
         })
-      }).process(templateCode)
+        .process(templateCode)
       result = result.replace(templateRegexp, templateOut)
     }
     if (scriptCode) {
-      const scriptOut = transformSync(scriptCode, {
-        plugin: ScriptPlugin,
+      const scriptOut = await transformAsync(scriptCode, {
+        plugins: [ScriptPlugin(babel)],
       })
-      result = result.replace(scriptRegexp, scriptOut.code)
+      if (scriptOut?.code)
+        result = result.replace(scriptRegexp, scriptOut.code)
     }
   }
   catch (error) {
