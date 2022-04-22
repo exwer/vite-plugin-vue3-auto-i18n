@@ -30,15 +30,15 @@ function hasImportedMember(
 export default function(
   babel: typeof babelCore,
 ): babelCore.PluginObj<VisitorState> {
-  const { types: t, template } = babel
-  let i18nImportNode: babelCore.types.ImportDeclaration | null = null
-  let vueImportNode: babelCore.types.ImportDeclaration | null = null
-  let shouldImportI18n = true
-  let shouldImportRef = true
-  let shouldImportComputed = true
   return {
     visitor: {
       Program(path) {
+        const { types: t, template } = babel
+        let i18nImportNode: babelCore.types.ImportDeclaration | null = null
+        let vueImportNode: babelCore.types.ImportDeclaration | null = null
+        let shouldImportI18n = true
+        let shouldImportRef = true
+        let shouldImportComputed = true
         if (path.node.body.length === 0) {
           path.node.body.push(
             template.ast(
