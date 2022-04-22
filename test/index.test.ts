@@ -2,6 +2,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import { describe, expect, it } from 'vitest'
 import * as VueCompiler from '@vue/compiler-sfc'
+import { start } from '../src/index'
 function compile(path: string, target: string) {
   try {
     let result = ''
@@ -26,10 +27,20 @@ function compile(path: string, target: string) {
     console.error(error)
   }
 }
-describe('should', () => {
-  compile(path.join(__dirname, './source.vue'), path.join(__dirname, './__snapshots__/source.js'))
-  compile(path.join(__dirname, './result.vue'), path.join(__dirname, './__snapshots__/result.js'))
-  it('exported', () => {
-    expect(1).toEqual(1)
+describe('import test', () => {
+  it('single script', async() => {
+    const source = '<script>import { a } from "b"</script>'
+    const result = await start(source)
+    expect(result).toMatchSnapshot()
+  })
+  it('complete vue file', async() => {
+    const source = '<template><div></div></template><script></script><style></style>'
+    const result = await start(source)
+    expect(result).toMatchSnapshot()
+  })
+  it('repeat import', async() => {
+    const source = '<script>import {ref} from "vue";import {useI18n} from "vue-i18n"</script>'
+    const result = await start(source)
+    expect(result).toMatchSnapshot()
   })
 })
