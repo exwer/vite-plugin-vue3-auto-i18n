@@ -39,6 +39,18 @@ export default function(
   return {
     visitor: {
       Program(path) {
+        if (path.node.body.length === 0) {
+          path.node.body.push(
+            template.ast(
+              'import { ref,computed } from \'vue\'',
+            ) as babelCore.types.Statement,
+            template.ast(
+              'import { useI18n } from "vue-i18n"',
+            ) as babelCore.types.Statement,
+          )
+          path.skip()
+        }
+
         const imports = path.node.body.filter(
           node => node.type === 'ImportDeclaration',
         )
@@ -79,7 +91,13 @@ export default function(
         if (!vueImportNode) {
           path.node.body.unshift(
             t.importDeclaration(
-              [t.importSpecifier(t.identifier('ref'), t.identifier('ref'))],
+              [
+                t.importSpecifier(t.identifier('ref'), t.identifier('ref')),
+                t.importSpecifier(
+                  t.identifier('computed'),
+                  t.identifier('computed'),
+                ),
+              ],
               t.stringLiteral('vue'),
             ),
           )
