@@ -53,6 +53,7 @@
     "@antfu/eslint-config": "^0.20.2",
     "@antfu/ni": "^0.14.0",
     "@babel/types": "^7.17.0",
+    "@types/babel__core": "^7.1.19",
     "@types/node": "^17.0.23",
     "@vitejs/plugin-vue": "^2.3.1",
     "bumpp": "^7.1.1",
@@ -69,7 +70,7 @@
     "vue-i18n": "9"
   },
   "dependencies": {
-    "@swc/core": "^1.2.170",
+    "@babel/core": "^7.17.9",
     "@vue/compiler-sfc": "^3.2.33",
     "posthtml": "^0.16.6"
   },
