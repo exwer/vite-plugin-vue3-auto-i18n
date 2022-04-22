@@ -20,15 +20,12 @@ function hasImportedMember(
   node: babelCore.types.ImportDeclaration,
   name: string,
 ) {
-  node.specifiers.forEach((item) => {
-    if (
+  return node.specifiers.some(
+    item =>
       item.type === 'ImportSpecifier'
       && item.imported.type === 'Identifier'
-      && item.imported.name === name
-    )
-      return true
-  })
-  return false
+      && item.imported.name === name,
+  )
 }
 export default function(
   babel: typeof babelCore,
@@ -88,10 +85,19 @@ export default function(
           )
         }
         else {
-          if (shouldImportRef)
-            vueImportNode.specifiers.push(t.importSpecifier(t.identifier('ref'), t.identifier('ref')))
-          if (shouldImportComputed)
-            vueImportNode.specifiers.push(t.importSpecifier(t.identifier('computed'), t.identifier('computed')))
+          if (shouldImportRef) {
+            vueImportNode.specifiers.push(
+              t.importSpecifier(t.identifier('ref'), t.identifier('ref')),
+            )
+          }
+          if (shouldImportComputed) {
+            vueImportNode.specifiers.push(
+              t.importSpecifier(
+                t.identifier('computed'),
+                t.identifier('computed'),
+              ),
+            )
+          }
         }
       },
     },
