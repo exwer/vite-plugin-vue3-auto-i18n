@@ -1,6 +1,6 @@
 import * as VueCompiler from '@vue/compiler-sfc'
 import postHtml from 'posthtml'
-import babel, { transformAsync } from '@babel/core'
+import { transformAsync } from '@babel/core'
 import ScriptPlugin from './plugins/script'
 export async function start(sourceCode: string) {
   let result = sourceCode
@@ -15,9 +15,6 @@ export async function start(sourceCode: string) {
       = descriptor.scriptSetup?.content ?? descriptor.script?.content
     const templateCode = descriptor.template?.content
     if (templateCode) {
-      /*
-        replace matched pure node content with {{ $t('xxx') }}
-      */
       const { html: templateOut } = await postHtml()
         .use((tree) => {
           tree.walk((node) => {
@@ -29,7 +26,7 @@ export async function start(sourceCode: string) {
     }
     if (scriptCode) {
       const scriptOut = await transformAsync(scriptCode, {
-        plugins: [ScriptPlugin(babel)],
+        plugins: [ScriptPlugin],
       })
       if (scriptOut?.code)
         result = result.replace(scriptRegexp, scriptOut.code)
@@ -57,3 +54,16 @@ export default function Vue3I18n() {
     },
   }
 }
+async function debug() {
+  const source
+  = '<script>import {ref} from "vue";import {useI18n} from "vue-i18n"</script>'
+  try {
+    const result = await start(source)
+    console.log(result)
+  }
+  catch (error) {
+    console.log(error)
+  }
+}
+
+debug()
