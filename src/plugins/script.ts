@@ -34,11 +34,6 @@ export default function(
     visitor: {
       Program(path) {
         const { types: t, template } = babel
-        let i18nImportNode: babelCore.types.ImportDeclaration | null = null
-        let vueImportNode: babelCore.types.ImportDeclaration | null = null
-        let shouldImportI18n = true
-        let shouldImportRef = true
-        let shouldImportComputed = true
         if (path.node.body.length === 0) {
           path.node.body.push(
             template.ast(
@@ -54,23 +49,13 @@ export default function(
         const imports = path.node.body.filter(
           node => node.type === 'ImportDeclaration',
         )
-        imports.forEach((node) => {
-          if (node.type === 'ImportDeclaration') {
-            if (node.source.value === 'vue-i18n') {
-              i18nImportNode = node
-              if (hasImportedMember(node, 'useI18n'))
-                shouldImportI18n = false
-            }
-            if (node.source.value === 'vue') {
-              vueImportNode = node
-              if (hasImportedMember(node, 'ref'))
-                shouldImportRef = false
-              if (hasImportedMember(node, 'computed'))
-                shouldImportComputed = false
-            }
-          }
-        })
-        if (!i18nImportNode) {
+
+        const i18nImport = imports.find(
+          node =>
+            node.type === 'ImportDeclaration'
+            && node.source.value === 'vue-i18n',
+        ) as babelCore.types.ImportDeclaration | undefined
+        if (!i18nImport) {
           path.node.body.unshift(
             t.importDeclaration(
               [
@@ -83,12 +68,22 @@ export default function(
             ),
           )
         }
-        else if (i18nImportNode && shouldImportI18n) {
-          i18nImportNode.specifiers.push(
-            t.importSpecifier(t.identifier('useI18n'), t.identifier('useI18n')),
-          )
+        else {
+          if (!hasImportedMember(i18nImport, 'useI18n')) {
+            i18nImport.specifiers.push(
+              t.importSpecifier(
+                t.identifier('useI18n'),
+                t.identifier('useI18n'),
+              ),
+            )
+          }
         }
-        if (!vueImportNode) {
+
+        const vueImport = imports.find(
+          node =>
+            node.type === 'ImportDeclaration' && node.source.value === 'vue',
+        ) as babelCore.types.ImportDeclaration | undefined
+        if (!vueImport) {
           path.node.body.unshift(
             t.importDeclaration(
               [
@@ -103,13 +98,13 @@ export default function(
           )
         }
         else {
-          if (shouldImportRef) {
-            vueImportNode.specifiers.push(
+          if (!hasImportedMember(vueImport, 'ref')) {
+            vueImport.specifiers.push(
               t.importSpecifier(t.identifier('ref'), t.identifier('ref')),
             )
           }
-          if (shouldImportComputed) {
-            vueImportNode.specifiers.push(
+          if (!hasImportedMember(vueImport, 'computed')) {
+            vueImport.specifiers.push(
               t.importSpecifier(
                 t.identifier('computed'),
                 t.identifier('computed'),
