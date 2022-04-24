@@ -1,5 +1,6 @@
 import type babelCore from '@babel/core'
-
+import { template } from '@babel/core'
+import { hasImportedMember } from '../utils/index'
 interface VisitorState {
   file: {
     opts: babelCore.TransformOptions
@@ -16,18 +17,10 @@ interface VisitorState {
 4. s => computed(()=>t('xxx'))
   - if theres no 'computed' imported,import computed ✅
 */
-function hasImportedMember(
-  node: babelCore.types.ImportDeclaration,
-  name: string,
+function addImportStatement(
+  { types: t, template }: typeof babelCore,
+  path: babelCore.NodePath<babelCore.types.Program>,
 ) {
-  return node.specifiers.some(
-    item =>
-      item.type === 'ImportSpecifier'
-      && item.imported.type === 'Identifier'
-      && item.imported.name === name,
-  )
-}
-function addImportStatement({ types: t, template }: typeof babelCore, path: babelCore.NodePath<babelCore.types.Program>) {
   if (path.node.body.length === 0) {
     path.node.body.push(
       template.ast(
@@ -46,18 +39,12 @@ function addImportStatement({ types: t, template }: typeof babelCore, path: babe
 
   const i18nImport = imports.find(
     node =>
-      node.type === 'ImportDeclaration'
-      && node.source.value === 'vue-i18n',
+      node.type === 'ImportDeclaration' && node.source.value === 'vue-i18n',
   ) as babelCore.types.ImportDeclaration | undefined
   if (!i18nImport) {
     path.node.body.unshift(
       t.importDeclaration(
-        [
-          t.importSpecifier(
-            t.identifier('useI18n'),
-            t.identifier('useI18n'),
-          ),
-        ],
+        [t.importSpecifier(t.identifier('useI18n'), t.identifier('useI18n'))],
         t.stringLiteral('vue-i18n'),
       ),
     )
@@ -65,27 +52,20 @@ function addImportStatement({ types: t, template }: typeof babelCore, path: babe
   else {
     if (!hasImportedMember(i18nImport, 'useI18n')) {
       i18nImport.specifiers.push(
-        t.importSpecifier(
-          t.identifier('useI18n'),
-          t.identifier('useI18n'),
-        ),
+        t.importSpecifier(t.identifier('useI18n'), t.identifier('useI18n')),
       )
     }
   }
 
   const vueImport = imports.find(
-    node =>
-      node.type === 'ImportDeclaration' && node.source.value === 'vue',
+    node => node.type === 'ImportDeclaration' && node.source.value === 'vue',
   ) as babelCore.types.ImportDeclaration | undefined
   if (!vueImport) {
     path.node.body.unshift(
       t.importDeclaration(
         [
           t.importSpecifier(t.identifier('ref'), t.identifier('ref')),
-          t.importSpecifier(
-            t.identifier('computed'),
-            t.identifier('computed'),
-          ),
+          t.importSpecifier(t.identifier('computed'), t.identifier('computed')),
         ],
         t.stringLiteral('vue'),
       ),
@@ -99,10 +79,7 @@ function addImportStatement({ types: t, template }: typeof babelCore, path: babe
     }
     if (!hasImportedMember(vueImport, 'computed')) {
       vueImport.specifiers.push(
-        t.importSpecifier(
-          t.identifier('computed'),
-          t.identifier('computed'),
-        ),
+        t.importSpecifier(t.identifier('computed'), t.identifier('computed')),
       )
     }
   }
@@ -115,18 +92,6 @@ export default function(
       Program(path) {
         addImportStatement(babel, path)
       },
-      ExportDefaultDeclaration(path) {
-        path.scope.traverse(path.node, {
-          ObjectMethod(p) {
-            if (p.node.kind === 'method' && p.node.key.type === 'Identifier' && p.node.key.name === 'setup') {
-              p.scope.traverse(p.node.body, {
-
-              })
-            }
-          },
-        })
-      },
-
     },
   }
 }
