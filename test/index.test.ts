@@ -4,7 +4,7 @@ import { start } from '../src/index'
 describe('import test', () => {
   test('All absence', async() => {
     expect(await start(`
-    <script>
+    <script setup>
       import { a } from "b"
     </script>`))
       .toMatchInlineSnapshot(`
@@ -17,7 +17,7 @@ describe('import test', () => {
 
   test('no ref', async() => {
     expect(await start(`
-    <script>
+    <script setup>
       import {computed} from "vue";
       import {useI18n} from "vue-i18n"
     </script>
@@ -31,7 +31,7 @@ describe('import test', () => {
 
   test('no computed', async() => {
     expect(await start(`
-    <script>
+    <script setup>
       import {ref} from "vue";
       import {useI18n} from "vue-i18n"
     </script>
@@ -45,7 +45,7 @@ describe('import test', () => {
 
   test('no useI18n', async() => {
     expect(await start(`
-        <script>
+        <script setup>
           import {ref,computed} from "vue";import {shit} from "vue-i18n"
         </script>
       `))
