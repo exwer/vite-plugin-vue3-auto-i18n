@@ -84,6 +84,7 @@ function addImportStatement(
     }
   }
 }
+
 export default function(
   babel: typeof babelCore,
 ): babelCore.PluginObj<VisitorState> {
@@ -91,6 +92,47 @@ export default function(
     visitor: {
       Program(path) {
         addImportStatement(babel, path)
+      },
+      ExportDefaultDeclaration(path) {
+        console.log('export default!')
+        path.scope.traverse(path.node, {
+          ObjectMethod({ node, scope }) {
+            console.log('object method traverse!')
+            if (
+              node.kind === 'method'
+              && node.key.type === 'Identifier'
+              && node.key.name === 'setup'
+            ) {
+              console.log('find setup!')
+              // BUG:add t failed
+              if (
+                node.body.body.some(
+                  n =>
+                    n.type === 'VariableDeclaration'
+                    && n.declarations.some(
+                      v =>
+                        v.init?.type === 'CallExpression'
+                        && v.init.callee.type === 'Identifier'
+                        && v.init.callee.name === 'useI18n'
+                        && v.id.type === 'ObjectPattern'
+                        && v.id.properties.some(
+                          p =>
+                            p.type === 'ObjectProperty'
+                            && p.key.type === 'Identifier'
+                            && p.key.name === 't',
+                        ),
+                    ),
+                )
+              ) {
+                node.body.body.unshift(
+                  template.ast(
+                    'const { t } = useI18n()',
+                  ) as babelCore.types.Statement,
+                )
+              }
+            }
+          },
+        })
       },
     },
   }
