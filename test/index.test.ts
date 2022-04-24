@@ -58,7 +58,7 @@ describe('import test', () => {
   })
 })
 
-/* describe('variable test', () => {
+describe('variable test', () => {
   test('no useI18n', async() => {
     expect(await start('<script>const a = "xxx"</script>'))
       .toMatchInlineSnapshot()
@@ -68,4 +68,4 @@ describe('import test', () => {
     expect(await start('<script>const { other } = useI18n()</script>'))
       .toMatchInlineSnapshot()
   })
-}) */
+})
