@@ -60,12 +60,46 @@ describe('import test', () => {
 
 describe('variable test', () => {
   test('no useI18n', async() => {
-    expect(await start('<script>const a = "xxx"</script>'))
+    expect(await start(`
+      <script setup>
+        const a = "xxx"
+      </script>
+    `))
+      .toMatchInlineSnapshot()
+  })
+
+  test('no useI18n(inside setup)', async() => {
+    expect(await start(`
+      <script>
+      export default{
+        setup(){
+          const a = "xxx"
+        }
+      }
+      </script>
+    `))
       .toMatchInlineSnapshot()
   })
 
   test('no { t }', async() => {
-    expect(await start('<script>const { other } = useI18n()</script>'))
+    expect(await start(`
+      <script setup>
+        const { other } = useI18n()
+      </script>
+    `))
+      .toMatchInlineSnapshot()
+  })
+
+  test('no { t }(inside setup)', async() => {
+    expect(await start(`
+    <script>
+    export default{
+      setup(){
+        const { other } = useI18n()
+      }
+    }
+    </script>
+    `))
       .toMatchInlineSnapshot()
   })
 })
