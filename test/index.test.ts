@@ -31,4 +31,13 @@ describe('import test', () => {
       import { useI18n } from \\"vue-i18n\\";</script>"
     `)
   })
+
+  test('no useI18n', async() => {
+    const source = '<script>import {ref,computed} from "vue";import {shit} from "vue-i18n"</script>'
+    const result = await start(source)
+    expect(result).toMatchInlineSnapshot(`
+      "<script>import { ref, computed } from \\"vue\\";
+      import { shit, useI18n } from \\"vue-i18n\\";</script>"
+    `)
+  })
 })
