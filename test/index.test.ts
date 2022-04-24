@@ -9,7 +9,7 @@ describe('import test', () => {
     </script>`))
       .toMatchInlineSnapshot(`
         "
-            <script>import { ref, computed } from \\"vue\\";
+            <script setup>import { ref, computed } from \\"vue\\";
         import { useI18n } from \\"vue-i18n\\";
         import { a } from \\"b\\";</script>"
       `)
@@ -23,7 +23,7 @@ describe('import test', () => {
     </script>
     `)).toMatchInlineSnapshot(`
       "
-          <script>import { computed, ref } from \\"vue\\";
+          <script setup>import { computed, ref } from \\"vue\\";
       import { useI18n } from \\"vue-i18n\\";</script>
           "
     `)
@@ -37,7 +37,7 @@ describe('import test', () => {
     </script>
     `)).toMatchInlineSnapshot(`
       "
-          <script>import { ref, computed } from \\"vue\\";
+          <script setup>import { ref, computed } from \\"vue\\";
       import { useI18n } from \\"vue-i18n\\";</script>
           "
     `)
@@ -51,7 +51,7 @@ describe('import test', () => {
       `))
       .toMatchInlineSnapshot(`
         "
-                <script>import { ref, computed } from \\"vue\\";
+                <script setup>import { ref, computed } from \\"vue\\";
         import { shit, useI18n } from \\"vue-i18n\\";</script>
               "
       `)
