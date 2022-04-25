@@ -52,15 +52,16 @@ createApp(App).use(i18n).mount('#app')
 ```
 
 Then, add this plugin to your `vite.config.js`.
-**warning: The order of this plugin should come after vue plugin.**
+**warning: This plugin should come after vue plugin, if you use vite-plugin-vue-i18n, then this plugin should also come after it**
 
 ```js
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
-import VueI18n from 'vite-plugin-vue3-i18n'
+import vueI18n from '@intlify/vite-plugin-vue-i18n' // if any
+import autoI18n from 'vite-plugin-vue3-autoI18n'
 
 export default defineConfig({
-  plugins: [vue(), VueI18n()],
+  plugins: [vue(), vueI18n(), autoI18n()],
 })
 ```
 
