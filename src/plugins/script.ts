@@ -85,6 +85,34 @@ function addImportStatement(
   }
 }
 
+function addVariableDeclaration(node: babelCore.types.Statement[]) {
+  if (
+    !node.some(
+      n =>
+        n.type === 'VariableDeclaration'
+        && n.declarations.some(
+          v =>
+            v.init?.type === 'CallExpression'
+            && v.init.callee.type === 'Identifier'
+            && v.init.callee.name === 'useI18n'
+            && v.id.type === 'ObjectPattern'
+            && v.id.properties.some(
+              p =>
+                p.type === 'ObjectProperty'
+                && p.key.type === 'Identifier'
+                && p.key.name === 't',
+            ),
+        ),
+    )
+  ) {
+    node.unshift(
+      template.ast(
+        'const { t } = useI18n()',
+      ) as babelCore.types.Statement,
+    )
+  }
+}
+
 export default function(
   babel: typeof babelCore,
 ): babelCore.PluginObj<VisitorState> {
@@ -94,42 +122,16 @@ export default function(
         addImportStatement(babel, path)
       },
       ExportDefaultDeclaration(path) {
-        console.log('export default!')
         path.scope.traverse(path.node, {
-          ObjectMethod({ node, scope }) {
-            console.log('object method traverse!')
+          ObjectMethod({ node }) {
             if (
               node.kind === 'method'
               && node.key.type === 'Identifier'
               && node.key.name === 'setup'
             ) {
-              console.log('find setup!')
               // BUG:add t failed
-              if (
-                node.body.body.some(
-                  n =>
-                    n.type === 'VariableDeclaration'
-                    && n.declarations.some(
-                      v =>
-                        v.init?.type === 'CallExpression'
-                        && v.init.callee.type === 'Identifier'
-                        && v.init.callee.name === 'useI18n'
-                        && v.id.type === 'ObjectPattern'
-                        && v.id.properties.some(
-                          p =>
-                            p.type === 'ObjectProperty'
-                            && p.key.type === 'Identifier'
-                            && p.key.name === 't',
-                        ),
-                    ),
-                )
-              ) {
-                node.body.body.unshift(
-                  template.ast(
-                    'const { t } = useI18n()',
-                  ) as babelCore.types.Statement,
-                )
-              }
+              // console.log('body:\n', JSON.stringify(node.body.body, null, 2))
+              addVariableDeclaration(node.body.body)
             }
           },
         })
