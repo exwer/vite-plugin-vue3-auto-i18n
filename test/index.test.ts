@@ -58,14 +58,20 @@ describe('import test', () => {
   })
 })
 
-describe('variable test', () => {
+describe.only('variable test', () => {
   test('no useI18n', async() => {
     expect(await start(`
       <script setup>
         const a = "xxx"
       </script>
     `))
-      .toMatchInlineSnapshot()
+      .toMatchInlineSnapshot(`
+        "
+              <script setup>import { ref, computed } from \\"vue\\";
+        import { useI18n } from \\"vue-i18n\\";
+        const a = \\"xxx\\";</script>
+            "
+      `)
   })
 
   test('no useI18n(inside setup)', async() => {
@@ -78,7 +84,21 @@ describe('variable test', () => {
       }
       </script>
     `))
-      .toMatchInlineSnapshot()
+      .toMatchInlineSnapshot(`
+        "
+              <script>import { ref, computed } from \\"vue\\";
+        import { useI18n } from \\"vue-i18n\\";
+        export default {
+          setup() {
+            const {
+              t
+            } = useI18n();
+            const a = \\"xxx\\";
+          }
+        
+        };</script>
+            "
+      `)
   })
 
   test('no { t }', async() => {
@@ -87,7 +107,15 @@ describe('variable test', () => {
         const { other } = useI18n()
       </script>
     `))
-      .toMatchInlineSnapshot()
+      .toMatchInlineSnapshot(`
+        "
+              <script setup>import { ref, computed } from \\"vue\\";
+        import { useI18n } from \\"vue-i18n\\";
+        const {
+          other
+        } = useI18n();</script>
+            "
+      `)
   })
 
   test('no { t }(inside setup)', async() => {
@@ -100,6 +128,22 @@ describe('variable test', () => {
     }
     </script>
     `))
-      .toMatchInlineSnapshot()
+      .toMatchInlineSnapshot(`
+        "
+            <script>import { ref, computed } from \\"vue\\";
+        import { useI18n } from \\"vue-i18n\\";
+        export default {
+          setup() {
+            const {
+              t
+            } = useI18n();
+            const {
+              other
+            } = useI18n();
+          }
+        
+        };</script>
+            "
+      `)
   })
 })
