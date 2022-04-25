@@ -183,3 +183,31 @@ describe('variable test', () => {
       `)
   })
 })
+
+describe('replace test', () => {
+  test('setup script', async() => {
+    expect(await testFunc(`
+      <script setup>
+        const num = 10
+        const str1 = 'misMatched'
+        const str2 = ref('hello')
+        const str3 = 'hi'
+      </script>
+    `))
+  })
+
+  test('setup func', async() => {
+    expect(await testFunc(`
+      <script>
+        export default{
+          setup(){
+            const num = 10
+            const str1 = 'misMatched'
+            const str2 = ref('hello')
+            const str3 = 'hi'
+          }
+        }
+      </script>
+    `))
+  })
+})
