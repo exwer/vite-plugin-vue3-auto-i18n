@@ -2,11 +2,12 @@ import * as VueCompiler from '@vue/compiler-sfc'
 import postHtml from 'posthtml'
 import babel, { transformAsync } from '@babel/core'
 import ScriptPlugin from './plugins/script'
-import { isMatchLocaleMsg } from './utils'
+import { getMatchedMsgPath } from './utils'
 
-export type LocaleMsg = Record<string, Record<string, Record<string, string>>>
+type Language = string
+export type LocaleMsg = Record<Language, Record<string, string | Record<any, any>>>
 
-export async function start(sourceCode: string, isMatchedStr: (target: string) => boolean) {
+export async function start(sourceCode: string, isMatchedStr: (target: string) => false | string) {
   let result = sourceCode
   // 匹配模板内容
   const templateRegexp = /(?<=^<template>)([\s\S]*)(?=<\/template>)/g
@@ -49,7 +50,7 @@ export default function Vue3I18n(locale: LocaleMsg) {
     name: 'vite-plugin-vue3-i18n',
     async transform(sourceCode: string, id: string) {
       if (id.endsWith('.vue')) {
-        const isMatchedStr = (target: string) => isMatchLocaleMsg(locale, target)
+        const isMatchedStr = (target: string) => getMatchedMsgPath(locale, target)
         const result = start(sourceCode, isMatchedStr)
         return {
           code: result,
