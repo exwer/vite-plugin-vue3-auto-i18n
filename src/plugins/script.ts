@@ -9,9 +9,9 @@ interface VisitorState {
 /*
 1. import { useI18n } from 'vue-i18n' ✅
   - Judging whether statement is repeated ✅
-2. const { t } = useI18n()
-  - Judging whether statement is repeated
-  - below import statement of useI18n
+2. const { t } = useI18n() ✅
+  - Judging whether statement is repeated(inside setup function,if any) ✅
+  - below import statement of useI18n ✅
 3. ref(s) => ref(t('xxx'))
   - if theres no 'ref' imported,import ref ✅
 4. s => computed(()=>t('xxx'))
