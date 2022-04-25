@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'vitest'
 import { start } from '../src/index'
-import { isMatchLocaleMsg } from '../src/utils'
+import { getMatchedMsgPath } from '../src/utils'
 
-const isMatchedStr = (target: string) => isMatchLocaleMsg({
+const isMatchedStr = (target: string) => getMatchedMsgPath({
   en: {
     message: {
       hello: 'hello world',
@@ -193,7 +193,19 @@ describe('replace test', () => {
         const str2 = ref('hello')
         const str3 = 'hi'
       </script>
-    `))
+    `)).toMatchInlineSnapshot(`
+      "
+            <script setup>import { ref, computed } from \\"vue\\";
+      import { useI18n } from \\"vue-i18n\\";
+      const {
+        t
+      } = useI18n();
+      const num = 10;
+      const str1 = 'misMatched';
+      const str2 = ref('hello');
+      const str3 = 'hi';</script>
+          "
+    `)
   })
 
   test('setup func', async() => {
@@ -208,6 +220,23 @@ describe('replace test', () => {
           }
         }
       </script>
-    `))
+    `)).toMatchInlineSnapshot(`
+      "
+            <script>import { ref, computed } from \\"vue\\";
+      import { useI18n } from \\"vue-i18n\\";
+      export default {
+        setup() {
+          const {
+            t
+          } = useI18n();
+          const num = 10;
+          const str1 = 'misMatched';
+          const str2 = ref('hello');
+          const str3 = 'hi';
+        }
+      
+      };</script>
+          "
+    `)
   })
 })
