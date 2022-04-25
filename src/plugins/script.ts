@@ -114,6 +114,7 @@ function addVariableDeclaration(node: babelCore.types.Statement[]) {
 
 export default function(
   babel: typeof babelCore,
+  isMatchedStr: (target: string) => boolean,
 ): babelCore.PluginObj<VisitorState> {
   return {
     visitor: {

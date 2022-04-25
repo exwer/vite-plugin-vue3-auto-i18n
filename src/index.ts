@@ -1,8 +1,12 @@
 import * as VueCompiler from '@vue/compiler-sfc'
 import postHtml from 'posthtml'
-import { transformAsync } from '@babel/core'
+import babel, { transformAsync } from '@babel/core'
 import ScriptPlugin from './plugins/script'
-export async function start(sourceCode: string) {
+import { isMatchLocaleMsg } from './utils'
+
+export type LocaleMsg = Record<string, Record<string, string>>
+
+export async function start(sourceCode: string, isMatchedStr: (target: string) => boolean) {
   let result = sourceCode
   // 匹配模板内容
   const templateRegexp = /(?<=^<template>)([\s\S]*)(?=<\/template>)/g
@@ -26,7 +30,7 @@ export async function start(sourceCode: string) {
     }
     if (scriptCode) {
       const scriptOut = await transformAsync(scriptCode, {
-        plugins: [ScriptPlugin],
+        plugins: [ScriptPlugin(babel, isMatchedStr)],
       })
       if (scriptOut?.code)
         result = result.replace(scriptRegexp, scriptOut.code)
@@ -40,13 +44,13 @@ export async function start(sourceCode: string) {
   }
   return result
 }
-
-export default function Vue3I18n() {
+export default function Vue3I18n(locale: LocaleMsg) {
   return {
     name: 'vite-plugin-vue3-i18n',
     async transform(sourceCode: string, id: string) {
       if (id.endsWith('.vue')) {
-        const result = start(sourceCode)
+        const isMatchedStr = (target: string) => isMatchLocaleMsg(locale, target)
+        const result = start(sourceCode, isMatchedStr)
         return {
           code: result,
         }
@@ -54,16 +58,3 @@ export default function Vue3I18n() {
     },
   }
 }
-async function debug() {
-  const source
-  = '<script>import {ref} from "vue";import {useI18n} from "vue-i18n"</script>'
-  try {
-    const result = await start(source)
-    console.log(result)
-  }
-  catch (error) {
-    console.error(error)
-  }
-}
-
-debug()
