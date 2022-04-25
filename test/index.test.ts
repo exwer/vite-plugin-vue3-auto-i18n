@@ -11,6 +11,9 @@ describe('import test', () => {
         "
             <script setup>import { ref, computed } from \\"vue\\";
         import { useI18n } from \\"vue-i18n\\";
+        const {
+          t
+        } = useI18n();
         import { a } from \\"b\\";</script>"
       `)
   })
@@ -24,6 +27,9 @@ describe('import test', () => {
     `)).toMatchInlineSnapshot(`
       "
           <script setup>import { computed, ref } from \\"vue\\";
+      const {
+        t
+      } = useI18n();
       import { useI18n } from \\"vue-i18n\\";</script>
           "
     `)
@@ -38,6 +44,9 @@ describe('import test', () => {
     `)).toMatchInlineSnapshot(`
       "
           <script setup>import { ref, computed } from \\"vue\\";
+      const {
+        t
+      } = useI18n();
       import { useI18n } from \\"vue-i18n\\";</script>
           "
     `)
@@ -52,13 +61,16 @@ describe('import test', () => {
       .toMatchInlineSnapshot(`
         "
                 <script setup>import { ref, computed } from \\"vue\\";
+        const {
+          t
+        } = useI18n();
         import { shit, useI18n } from \\"vue-i18n\\";</script>
               "
       `)
   })
 })
 
-describe.only('variable test', () => {
+describe('variable test', () => {
   test('no useI18n', async() => {
     expect(await start(`
       <script setup>
@@ -69,6 +81,9 @@ describe.only('variable test', () => {
         "
               <script setup>import { ref, computed } from \\"vue\\";
         import { useI18n } from \\"vue-i18n\\";
+        const {
+          t
+        } = useI18n();
         const a = \\"xxx\\";</script>
             "
       `)
@@ -111,6 +126,9 @@ describe.only('variable test', () => {
         "
               <script setup>import { ref, computed } from \\"vue\\";
         import { useI18n } from \\"vue-i18n\\";
+        const {
+          t
+        } = useI18n();
         const {
           other
         } = useI18n();</script>

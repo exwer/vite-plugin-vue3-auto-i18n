@@ -105,11 +105,10 @@ function addVariableDeclaration(node: babelCore.types.Statement[]) {
         ),
     )
   ) {
-    node.unshift(
-      template.ast(
-        'const { t } = useI18n()',
-      ) as babelCore.types.Statement,
-    )
+    const idx = node.findIndex(n => n.type !== 'ImportDeclaration')
+    node.splice(idx, 0, template.ast(
+      'const { t } = useI18n()',
+    ) as babelCore.types.Statement)
   }
 }
 
@@ -120,21 +119,25 @@ export default function(
     visitor: {
       Program(path) {
         addImportStatement(babel, path)
-      },
-      ExportDefaultDeclaration(path) {
-        path.scope.traverse(path.node, {
-          ObjectMethod({ node }) {
-            if (
-              node.kind === 'method'
-              && node.key.type === 'Identifier'
-              && node.key.name === 'setup'
-            ) {
-              // BUG:add t failed
-              // console.log('body:\n', JSON.stringify(node.body.body, null, 2))
-              addVariableDeclaration(node.body.body)
-            }
-          },
-        })
+        if (path.node.body.some(p => p.type === 'ExportDefaultDeclaration')) {
+          path.scope.traverse(path.node, {
+            ExportDefaultDeclaration(p) {
+              p.scope.traverse(p.node, {
+                ObjectMethod({ node }) {
+                  if (
+                    node.kind === 'method'
+                    && node.key.type === 'Identifier'
+                    && node.key.name === 'setup'
+                  )
+                    addVariableDeclaration(node.body.body)
+                },
+              })
+            },
+          })
+        }
+        else {
+          addVariableDeclaration(path.node.body)
+        }
       },
     },
   }
