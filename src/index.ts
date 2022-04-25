@@ -4,7 +4,7 @@ import babel, { transformAsync } from '@babel/core'
 import ScriptPlugin from './plugins/script'
 import { isMatchLocaleMsg } from './utils'
 
-export type LocaleMsg = Record<string, Record<string, string>>
+export type LocaleMsg = Record<string, Record<string, Record<string, string>>>
 
 export async function start(sourceCode: string, isMatchedStr: (target: string) => boolean) {
   let result = sourceCode
