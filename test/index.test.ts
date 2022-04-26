@@ -240,3 +240,18 @@ describe('replace test', () => {
     `)
   })
 })
+
+describe('template test', () => {
+  test('plain node', async() => {
+    expect(await testFunc(`
+      <template>
+        <div>hi</div>
+        <ul>
+          <li>misMatched</li>
+          <li>hello world</li>
+          <li>misMatched</li>
+        </ul>
+      </template>
+    `)).toMatchInlineSnapshot()
+  })
+})
