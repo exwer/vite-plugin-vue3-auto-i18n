@@ -106,31 +106,60 @@ function addVariableDeclaration(node: babelCore.types.Statement[]) {
     )
   ) {
     const idx = node.findIndex(n => n.type !== 'ImportDeclaration')
-    node.splice(idx, 0, template.ast(
-      'const { t } = useI18n()',
-    ) as babelCore.types.Statement)
+    node.splice(
+      idx,
+      0,
+      template.ast('const { t } = useI18n()') as babelCore.types.Statement,
+    )
   }
+}
+
+function replaceMatchedStr(
+  node: babelCore.NodePath<
+  babelCore.types.Program | babelCore.types.ObjectMethod
+  >,
+  isMatchedStr: (target: string) => false | string,
+) {
+  node.traverse({
+    StringLiteral(path) {
+      const val = isMatchedStr(path.node.value)
+      if (val) {
+        // console.log(JSON.stringify(path.parentPath.node, null, 2))
+        if (
+          path.parentPath.node.type === 'CallExpression'
+          && path.parentPath.node.callee.type === 'Identifier'
+          && path.parentPath.node.callee.name === 'ref'
+        ) { path.replaceWith(template.statement.ast(`t('${val}')`)) }
+        else {
+          path.replaceWith(template.statement.ast(`computed(()=>t('${val}'))`))
+          path.skip()
+        }
+      }
+    },
+  })
 }
 
 export default function(
   babel: typeof babelCore,
-  isMatchedStr: (target: string) => false | string,
+  { isMatchedStr }: { isMatchedStr: (target: string) => false | string },
 ): babelCore.PluginObj<VisitorState> {
   return {
     visitor: {
       Program(path) {
         addImportStatement(babel, path)
-        if (path.node.body.some(p => p.type === 'ExportDefaultDeclaration')) {
+        if (path.node.body.some(n => n.type === 'ExportDefaultDeclaration')) {
           path.scope.traverse(path.node, {
-            ExportDefaultDeclaration(p) {
-              p.scope.traverse(p.node, {
-                ObjectMethod({ node }) {
+            ExportDefaultDeclaration(p1) {
+              p1.scope.traverse(p1.node, {
+                ObjectMethod(p2) {
                   if (
-                    node.kind === 'method'
-                    && node.key.type === 'Identifier'
-                    && node.key.name === 'setup'
-                  )
-                    addVariableDeclaration(node.body.body)
+                    p2.node.kind === 'method'
+                    && p2.node.key.type === 'Identifier'
+                    && p2.node.key.name === 'setup'
+                  ) {
+                    addVariableDeclaration(p2.node.body.body)
+                    replaceMatchedStr(p2, isMatchedStr)
+                  }
                 },
               })
             },
@@ -138,6 +167,7 @@ export default function(
         }
         else {
           addVariableDeclaration(path.node.body)
+          replaceMatchedStr(path, isMatchedStr)
         }
       },
     },
