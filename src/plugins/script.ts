@@ -12,9 +12,9 @@ interface VisitorState {
 2. const { t } = useI18n() ✅
   - Judging whether statement is repeated(inside setup function,if any) ✅
   - below import statement of useI18n ✅
-3. ref(s) => ref(t('xxx'))
+3. ref(s) => ref(t('xxx')) ✅
   - if theres no 'ref' imported,import ref ✅
-4. s => computed(()=>t('xxx'))
+4. s => computed(()=>t('xxx')) ✅
   - if theres no 'computed' imported,import computed ✅
 */
 function addImportStatement(

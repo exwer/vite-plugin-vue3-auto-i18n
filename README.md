@@ -9,8 +9,9 @@ This plugin is still in development, and is not ready for use.
 
 **Auto import** Vue-i18n in every vue sfc files and **auto replace** i18n words in vue sfc files.
 
-- ✅
-- ❌
+- replace matched reactive string variable `ref('xxx')` with `ref(t('xxx'))` in both `setup script` and `setup function`.✅
+- replace matched literal string `'xxx'` with `computed(()=>t('xxx'))` in both `setup script` and `setup function`. ✅
+- replace matched plain node value `xxx` with `$t('xxx')` in template. ❌
 
 ## Installation
 
@@ -72,7 +73,7 @@ write your code as usual, like:
 <script setup lang="ts">
 import { ref } from 'vue'
 // ...
-</script>
+</scrip>
 
 <template>
   <div>hello world</div>
