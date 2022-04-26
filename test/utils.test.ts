@@ -1,7 +1,7 @@
-import { expect, test } from 'vitest'
+import { describe, expect, test } from 'vitest'
 import { getMatchedMsgPath } from '../src/utils/index'
 
-test('getMatchedMsgPath', () => {
+describe('getMatchedMsgPath', () => {
   const locale = {
     ch: {
       greetings: {
@@ -28,8 +28,16 @@ test('getMatchedMsgPath', () => {
       fake: 'fake',
     },
   }
-  expect(getMatchedMsgPath(locale, 'hello')).toBe('.greetings.hello')
-  expect(getMatchedMsgPath(locale, 'info')).toBe('.messages.info')
-  expect(getMatchedMsgPath(locale, 'fake')).toBe('.fake')
-  expect(getMatchedMsgPath(locale, 'nothing')).toBe(false)
+  test('case 1', () => {
+    expect(getMatchedMsgPath(locale, 'hello')).toBe('.greetings.hello')
+  })
+  test('case 2', () => {
+    expect(getMatchedMsgPath(locale, 'info')).toBe('.messages.info')
+  })
+  test('case 3', () => {
+    expect(getMatchedMsgPath(locale, 'fake')).toBe('.fake')
+  })
+  test('case 4', () => {
+    expect(getMatchedMsgPath(locale, 'nothing')).toBe(false)
+  })
 })
