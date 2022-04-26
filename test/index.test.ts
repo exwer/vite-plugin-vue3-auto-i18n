@@ -128,7 +128,7 @@ describe('variable test', () => {
             } = useI18n();
             const a = \\"xxx\\";
           }
-        
+
         };</script>
             "
       `)
@@ -177,7 +177,7 @@ describe('variable test', () => {
               other
             } = useI18n();
           }
-        
+
         };</script>
             "
       `)
@@ -190,7 +190,7 @@ describe('replace test', () => {
       <script setup>
         const num = 10
         const str1 = 'misMatched'
-        const str2 = ref('hello')
+        const str2 = ref('hello world')
         const str3 = 'hi'
       </script>
     `)).toMatchInlineSnapshot(`
@@ -202,8 +202,8 @@ describe('replace test', () => {
       } = useI18n();
       const num = 10;
       const str1 = 'misMatched';
-      const str2 = ref('hello');
-      const str3 = 'hi';</script>
+      const str2 = ref(t('message.hello'));
+      const str3 = computed(() => t('message.hi'));</script>
           "
     `)
   })
@@ -215,7 +215,7 @@ describe('replace test', () => {
           setup(){
             const num = 10
             const str1 = 'misMatched'
-            const str2 = ref('hello')
+            const str2 = ref('hello world')
             const str3 = 'hi'
           }
         }
@@ -231,8 +231,8 @@ describe('replace test', () => {
           } = useI18n();
           const num = 10;
           const str1 = 'misMatched';
-          const str2 = ref('hello');
-          const str3 = 'hi';
+          const str2 = ref(t('message.hello'));
+          const str3 = computed(() => t('message.hi'));
         }
       
       };</script>
