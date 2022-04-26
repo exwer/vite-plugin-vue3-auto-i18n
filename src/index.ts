@@ -31,7 +31,7 @@ export async function start(sourceCode: string, isMatchedStr: (target: string) =
     }
     if (scriptCode) {
       const scriptOut = await transformAsync(scriptCode, {
-        plugins: [ScriptPlugin(babel, isMatchedStr)],
+        plugins: [[ScriptPlugin, { babel, isMatchedStr }]],
       })
       if (scriptOut?.code)
         result = result.replace(scriptRegexp, scriptOut.code)
@@ -51,7 +51,7 @@ export default function Vue3I18n(locale: LocaleMsg) {
     async transform(sourceCode: string, id: string) {
       if (id.endsWith('.vue')) {
         const isMatchedStr = (target: string) => getMatchedMsgPath(locale, target)
-        const result = start(sourceCode, isMatchedStr)
+        const result = await start(sourceCode, isMatchedStr)
         return {
           code: result,
         }
