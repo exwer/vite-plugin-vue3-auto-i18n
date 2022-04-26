@@ -1,6 +1,6 @@
 {
   "name": "vite-plugin-vue3-auto-i18n",
-  "version": "0.1.1-beta.1",
+  "version": "0.1.2-beta.1",
   "packageManager": "pnpm@6.32.3",
   "description": "Auto import Vue-i18n in every vue sfc files and auto replace i18n words in vue sfc files.",
   "keywords": [
