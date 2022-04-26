@@ -24,7 +24,7 @@ export function getMatchedMsgPath(
     obj: Record<string, string | Record<string, any>>,
     value: string,
   ) {
-    let result = ''
+    let path = ''
     const keys = Object.keys(obj)
     for (let i = 0; i < keys.length; i++) {
       const key = keys[i]
@@ -32,12 +32,12 @@ export function getMatchedMsgPath(
         return `.${key}`
       }
       else if (typeof obj[key] !== 'string') {
-        result += getPath(obj[key] as any, value)
-        if (result)
-          return `.${key}${result}`
+        path += getPath(obj[key] as any, value)
+        if (path)
+          return `.${key}${path}`
       }
     }
-    return result
+    return path
   }
   const result = getPath(lang, target)
   if (result)
