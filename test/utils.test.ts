@@ -29,13 +29,13 @@ describe('getMatchedMsgPath', () => {
     },
   }
   test('case 1', () => {
-    expect(getMatchedMsgPath(locale, 'hello')).toBe('.greetings.hello')
+    expect(getMatchedMsgPath(locale, 'hello')).toBe('greetings.hello')
   })
   test('case 2', () => {
-    expect(getMatchedMsgPath(locale, 'info')).toBe('.messages.info')
+    expect(getMatchedMsgPath(locale, 'info')).toBe('messages.info')
   })
   test('case 3', () => {
-    expect(getMatchedMsgPath(locale, 'fake')).toBe('.fake')
+    expect(getMatchedMsgPath(locale, 'fake')).toBe('fake')
   })
   test('case 4', () => {
     expect(getMatchedMsgPath(locale, 'nothing')).toBe(false)

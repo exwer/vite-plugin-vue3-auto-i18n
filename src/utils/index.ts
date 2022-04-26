@@ -41,6 +41,6 @@ export function getMatchedMsgPath(
   }
   const result = getPath(lang, target)
   if (result)
-    return result
+    return result.slice(1)
   return false
 }
