@@ -247,11 +247,32 @@ describe('template test', () => {
       <template>
         <div>hi</div>
         <ul>
-          <li>misMatched</li>
-          <li>hello world</li>
-          <li>misMatched</li>
+          <li v-if="x">misMatched</li>
+          <li v-else>hello world</li>
+          <li v-once>misMatched</li>
         </ul>
+        <Custom>
+          <template #header>
+            <p>hello world</p>
+          </template>
+        </Custom>
       </template>
-    `)).toMatchInlineSnapshot()
+    `)).toMatchInlineSnapshot(`
+      "
+            <template>
+              <div>$t('message.hi')</div>
+              <ul>
+                <li v-if=\\"x\\">misMatched</li>
+                <li v-else>$t('message.hello')</li>
+                <li v-once>misMatched</li>
+              </ul>
+              <Custom>
+                <template #header>
+                  <p>$t('message.hello')</p>
+                </template>
+              </Custom>
+            </template>
+          "
+    `)
   })
 })

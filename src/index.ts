@@ -1,7 +1,7 @@
 import * as VueCompiler from '@vue/compiler-sfc'
-import postHtml from 'posthtml'
 import babel, { transformAsync } from '@babel/core'
 import ScriptPlugin from './plugins/script'
+import templateTransformer from './plugins/template'
 import { getMatchedMsgPath } from './utils'
 
 type Language = string
@@ -20,13 +20,7 @@ export async function start(sourceCode: string, isMatchedStr: (target: string) =
       = descriptor.scriptSetup?.content ?? descriptor.script?.content
     const templateCode = descriptor.template?.content
     if (templateCode) {
-      const { html: templateOut } = await postHtml()
-        .use((tree) => {
-          tree.walk((node) => {
-            return node
-          })
-        })
-        .process(templateCode)
+      const templateOut = await templateTransformer(templateCode, isMatchedStr)
       result = result.replace(templateRegexp, templateOut)
     }
     if (scriptCode) {
