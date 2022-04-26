@@ -1,9 +1,9 @@
 # READ THIS FIRST!
 This plugin is still in development, and is not ready for use.
 
-# [name]
+# vite-plugin-vue3-auto-i18n
 
-[![NPM version](https://img.shields.io/npm/v/[name]?color=a1b858&label=)](https://www.npmjs.com/package/[name])
+[![NPM version](https://img.shields.io/npm/v/vite-plugin-vue3-auto-i18n?color=a1b858&label=)](https://www.npmjs.com/package/vite-plugin-vue3-auto-i18n)
 
 ## Introdction
 

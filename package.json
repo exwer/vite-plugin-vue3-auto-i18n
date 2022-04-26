@@ -2,7 +2,7 @@
   "name": "vite-plugin-vue3-auto-i18n",
   "version": "0.1.0-beta.1",
   "packageManager": "pnpm@6.32.3",
-  "description": "",
+  "description": "Auto import Vue-i18n in every vue sfc files and auto replace i18n words in vue sfc files.",
   "keywords": [
     "vue3",
     "i18n",
@@ -10,15 +10,15 @@
     "vue-i18n",
     "vite plugin"
   ],
-  "homepage": "https://github.com/love-js/[name]#readme",
+  "homepage": "https://github.com/love-js/vite-plugin-vue3-auto-i18n#readme",
   "bugs": {
-    "url": "https://github.com/love-js/[name]/issues"
+    "url": "https://github.com/love-js/vite-plugin-vue3-auto-i18n/issues"
   },
   "license": "MIT",
   "author": "love-JS <ss.lbw.ss@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/love-js/[name].git"
+    "url": "git+https://github.com/love-js/vite-plugin-vue3-auto-i18n.git"
   },
   "funding": "https://github.com/sponsors/love-js",
   "main": "./dist/index.cjs",
