@@ -78,8 +78,7 @@
   },
   "dependencies": {
     "@babel/core": "^7.17.9",
-    "@vue/compiler-sfc": "^3.2.33",
-    "posthtml": "^0.16.6"
+    "@vue/compiler-sfc": "^3.2.33"
   },
   "peerDependencies": {
     "vue-i18n": "^9"

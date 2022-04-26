@@ -1,5 +1,5 @@
 # READ THIS FIRST!
-This plugin is still in development, and is not ready for use.
+This plugin is still in beta. Expect bugs!
 
 # vite-plugin-vue3-auto-i18n
 
@@ -16,7 +16,7 @@ This plugin is still in development, and is not ready for use.
 ## Installation
 
 ```shell
-npm install -D [name]
+npm install -D vite-plugin-vue3-auto-i18n
 ```
 
 First, make sure you have added [vue-i18n](https://vue-i18n.intlify.dev/) in your project.
@@ -53,7 +53,8 @@ createApp(App).use(i18n).mount('#app')
 ```
 
 Then, add this plugin to your `vite.config.js`.
-**warning: This plugin should come after vue plugin, if you use vite-plugin-vue-i18n, then this plugin should also come after it**
+
+**Load order: This plugin should come after vue plugin, if you use vite-plugin-vue-i18n, then this plugin should also come after it**
 
 ```js
 import { defineConfig } from 'vite'
