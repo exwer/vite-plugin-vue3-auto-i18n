@@ -74,7 +74,7 @@ write your code as usual, like:
 <script setup lang="ts">
 import { ref } from 'vue'
 // ...
-</scrip>
+</script>
 
 <template>
   <div>hello world</div>
