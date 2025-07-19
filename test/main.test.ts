@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { start } from '../src/index'
+import Vue3I18n, { AutoI18nOptions } from '../src/index'
 import { getMatchedMsgPath } from '../src/utils'
 
 const locale = {
@@ -25,7 +25,10 @@ const locale = {
   },
 }
 const isMatchedStr = (target: string) => getMatchedMsgPath(locale, target)
-const testFunc = (source: string) => start(source, isMatchedStr)
+const testFunc = async (source: string) => {
+  const out = await Vue3I18n(locale, {}).transform(source, 'test.vue')
+  return out?.code ?? ''
+}
 
 describe('script transform', () => {
   test('ref/computed/t', async () => {
@@ -180,5 +183,47 @@ describe('template transform', () => {
       error = e
     }
     expect(error).toBe(null)
+  })
+})
+
+describe('plugin options', () => {
+  const baseLocale = locale
+  const vueFile = `
+    <script setup>const a = 'hello world'</script>
+    <template><div>hello world</div></template>
+  `
+  function runWithOptions(options: Partial<AutoI18nOptions>) {
+    const plugin = Vue3I18n(baseLocale, options)
+    // @ts-ignore
+    return plugin.transform(vueFile, 'test.vue')
+  }
+  test('disable script', async () => {
+    const out = await runWithOptions({ enableScript: false })
+    if (!out) throw new Error('transform result is undefined')
+    expect(out.code).toContain(`<div>$t('message.hello')</div>`)
+  })
+  test('disable template', async () => {
+    const out = await runWithOptions({ enableTemplate: false })
+    if (!out) throw new Error('transform result is undefined')
+    expect(out.code).toContain(`const a = computed(() => t('message.hello'))`)
+    expect(out.code).toContain(`<div>hello world</div>`)
+  })
+  test('exclude by string', async () => {
+    const plugin = Vue3I18n(baseLocale, { exclude: ['test.vue'] })
+    // @ts-ignore
+    const out = await plugin.transform(vueFile, 'test.vue')
+    expect(out).toBeUndefined()
+  })
+  test('exclude by regexp', async () => {
+    const plugin = Vue3I18n(baseLocale, { exclude: [/test\.vue$/] })
+    // @ts-ignore
+    const out = await plugin.transform(vueFile, 'test.vue')
+    expect(out).toBeUndefined()
+  })
+  test('customMatcher', async () => {
+    const out = await runWithOptions({ customMatcher: (txt) => txt === 'hello world' ? 'custom.key' : false })
+    if (!out) throw new Error('transform result is undefined')
+    expect(out.code).toContain(`t('custom.key')`)
+    expect(out.code).toContain(`$t('custom.key')`)
   })
 }) 

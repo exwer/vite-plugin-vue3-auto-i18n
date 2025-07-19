@@ -72,6 +72,37 @@ export default defineConfig({
 })
 ```
 
+## Options
+
+You can configure the plugin with the following options:
+
+```ts
+interface AutoI18nOptions {
+  enableScript?: boolean // Enable script transform (default: true)
+  enableTemplate?: boolean // Enable template transform (default: true)
+  exclude?: (string | RegExp)[] // Exclude files by path or pattern
+  customMatcher?: (text: string) => string | false // Custom match function
+  debug?: boolean // Print debug info (default: false)
+}
+```
+
+**Example:**
+```js
+import autoI18n from 'vite-plugin-vue3-auto-i18n'
+
+export default defineConfig({
+  plugins: [
+    autoI18n(locale, {
+      enableScript: true,
+      enableTemplate: true,
+      exclude: ['node_modules', /test\.vue$/],
+      customMatcher: (txt) => txt === 'hello' ? 'custom.key' : false,
+      debug: true,
+    })
+  ]
+})
+```
+
 ## Usage
 write your code as usual, like:
 
