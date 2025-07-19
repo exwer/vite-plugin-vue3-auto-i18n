@@ -33,6 +33,9 @@ export async function transformSFC(
   options: TransformOptions
 ): Promise<string> {
   const { locale, enableScript = true, enableTemplate = true, customMatcher, keyGenerator, debug } = options
+  if (!locale || typeof locale !== 'object') {
+    throw new Error('config.locale is required')
+  }
   const descriptor = parseSFC(sourceCode).descriptor
   const scriptCode = descriptor.scriptSetup?.content ?? descriptor.script?.content
   const templateCode = descriptor.template?.content
