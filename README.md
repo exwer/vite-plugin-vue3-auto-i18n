@@ -112,6 +112,15 @@ const { t } = useI18n()
 - If your template has a syntax error, the plugin will throw a friendly error message like:
   `[auto-i18n] template parse error: ...`
 
+## Not Supported
+
+The following scenarios are currently NOT supported:
+
+- Complex expressions (e.g. `{{ 'hello' + name }}`, `:placeholder="foo ? 'hello' : 'hi'"`)
+- Slot content and scoped slots (e.g. `<template #header>hello world</template>`)
+- Directive arguments and event modifiers (e.g. `v-tooltip="'hello world'"`, `v-on:click="'hi'"`)
+- Component names, prop names, etc.
+
 ## License
 
 [MIT](./LICENSE) License © 2022 [love-JS](https://github.com/love-js)
