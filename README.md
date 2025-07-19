@@ -292,6 +292,9 @@ The following scenarios are **not supported**:
   <MyComponent title="Hello" />  <!-- ❌ -->
   ```
 
+- **脚本和模板中都可以直接使用 `$t('xxx')`，无需手动引入 useI18n 或 t**
+- **无需在 `<script setup>` 中手动引入 useI18n 或 t，直接用 $t('xxx') 即可**
+
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.

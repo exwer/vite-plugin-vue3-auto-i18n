@@ -40,8 +40,8 @@ describe('script transform', () => {
       </script>
     `
     const out = await testFunc(code)
-    expect(out).toContain(`ref(t('message.hello'))`)
-    expect(out).toContain(`computed(() => t('message.hi'))`)
+    expect(out).toContain(`ref($t('message.hello'))`)
+    expect(out).toContain(`computed(() => $t('message.hi'))`)
     expect(out).toContain(`'notMatch'`)
   })
 })
@@ -149,9 +149,9 @@ describe('template transform', () => {
       </template>
     `
     const out = await testFunc(code)
-    expect(out).toContain(`[t('message.hello'), t('message.hi'), 'notMatch']`)
-    expect(out).toContain(`a: t('message.hello')`)
-    expect(out).toContain(`b: t('message.hi')`)
+    expect(out).toContain(`[$t('message.hello'), $t('message.hi'), 'notMatch']`)
+    expect(out).toContain(`a: $t('message.hello')`)
+    expect(out).toContain(`b: $t('message.hi')`)
     expect(out).toContain(`c: 'notMatch'`)
   })
 
@@ -205,7 +205,7 @@ describe('plugin options', () => {
   test('disable template', async () => {
     const out = await runWithOptions({ enableTemplate: false })
     if (!out) throw new Error('transform result is undefined')
-    expect(out.code).toContain(`const a = computed(() => t('message.hello'))`)
+    expect(out.code).toContain(`const a = computed(() => $t('message.hello'))`)
     expect(out.code).toContain(`<div>hello world</div>`)
   })
   test('exclude by string', async () => {
