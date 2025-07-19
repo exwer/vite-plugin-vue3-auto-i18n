@@ -17,9 +17,22 @@ export default async function templateTransformer(
         node.content = node.content.replace(content, `$t('${matched}')`)
       }
     }
+    // 处理插值表达式
+    if (node.type === NodeTypes.INTERPOLATION && node.content && node.content.type === NodeTypes.SIMPLE_EXPRESSION) {
+      const raw = node.content.content.trim()
+      // 只处理字符串字面量
+      if (/^'.*'$|^".*"$/.test(raw)) {
+        const str = raw.slice(1, -1)
+        const matched = isMatchedStr(str)
+        if (matched && str.length > 0) {
+          node.content.content = `$t('${matched}')`
+        }
+      }
+    }
     // 处理元素节点的属性
     if (node.type === NodeTypes.ELEMENT && node.props) {
       node.props.forEach((prop: any) => {
+        // 静态属性
         if (prop.type === NodeTypes.ATTRIBUTE && prop.value) {
           const content = prop.value.content.trim()
           const matched = isMatchedStr(content)
@@ -27,6 +40,17 @@ export default async function templateTransformer(
           if (matched && content.length > 0) {
             prop.name = `:${prop.name}`
             prop.value.content = `$t('${matched}')`
+          }
+        }
+        // 动态绑定属性 :xxx="'xxx'"
+        if (prop.type === NodeTypes.DIRECTIVE && prop.name === 'bind' && prop.exp && prop.exp.type === NodeTypes.SIMPLE_EXPRESSION) {
+          const raw = prop.exp.content.trim()
+          if (/^'.*'$|^".*"$/.test(raw)) {
+            const str = raw.slice(1, -1)
+            const matched = isMatchedStr(str)
+            if (matched && str.length > 0) {
+              prop.exp.content = `$t('${matched}')`
+            }
           }
         }
       })
@@ -55,7 +79,14 @@ export default async function templateTransformer(
           }
           return ` ${p.name}`
         } else if (p.type === NodeTypes.DIRECTIVE) {
-          // 只处理最常见的 v-if/v-else/v-once
+          // 只处理最常见的 v-if/v-else/v-once 和 v-bind
+          if (p.name === 'bind' && p.arg && p.exp) {
+            // v-bind:xxx="exp" => :xxx="exp"
+            return ` :${p.arg.content}="${p.exp.content}"`
+          } else if (p.name === 'bind' && !p.arg && p.exp) {
+            // v-bind="exp"
+            return ` v-bind="${p.exp.content}"`
+          }
           let exp = ''
           if (p.exp) exp = `=\"${p.exp.content}\"`
           return ` v-${p.name}${exp}`
@@ -78,6 +109,9 @@ export default async function templateTransformer(
     }
     if (node.type === NodeTypes.ELEMENT && node.tag === 'template') {
       return `<template>${node.children.map(gen).join('')}</template>`
+    }
+    if (node.type === NodeTypes.INTERPOLATION) {
+      return `{{ ${node.content.content} }}`
     }
     return ''
   }

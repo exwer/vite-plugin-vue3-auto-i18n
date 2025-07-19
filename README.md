@@ -12,7 +12,10 @@ This plugin is still in beta. Expect bugs!
 - replace matched reactive string variable `ref('xxx')` with `ref(t('xxx'))` in both `setup script` and `setup function`.✅
 - replace matched literal string `'xxx'` with `computed(()=>t('xxx'))` in both `setup script` and `setup function`. ✅
 - replace matched plain node value `xxx` with `$t('xxx')` in template. ✅
-- replace matched attribute value (e.g. `placeholder="xxx"`) with `placeholder="{{ $t('xxx') }}"` in template. ✅
+- replace matched attribute value (e.g. `placeholder="xxx"`) with `:placeholder="$t('xxx')"` in template. ✅
+- replace matched dynamic attribute binding (e.g. `:placeholder="'xxx'"`) with `:placeholder="$t('xxx')"` in template. ✅
+- replace matched interpolation (e.g. `{{ 'xxx' }}`) with `{{ $t('xxx') }}` in template. ✅
+- Friendly error message when template syntax error occurs. ✅
 
 ## Installation
 
@@ -80,11 +83,13 @@ import { ref } from 'vue'
 <template>
   <div>hello world</div>
   <input placeholder="hello world" />
+  <input :placeholder="'hello world'" />
+  <div>{{ 'hello world' }}</div>
 </template>
 ```
 
-Finally,this plugin will matches all the strings in the i18n configuration and replaces them automatically.
-For example,The above code will be converted to:
+Finally, this plugin will match all the strings in the i18n configuration and replace them automatically.
+For example, the above code will be converted to:
 ```vue
 <script setup lang="ts">
 import { ref } from 'vue'
@@ -97,8 +102,14 @@ const { t } = useI18n()
 <template>
   <div>{{ $t('message.hello') }}</div>
   <input :placeholder="$t('message.hello')" />
+  <input :placeholder="$t('message.hello')" />
 </template>
 ```
+
+## Error Handling
+
+- If your template has a syntax error, the plugin will throw a friendly error message like:
+  `[auto-i18n] template parse error: ...`
 
 ## License
 

@@ -97,4 +97,66 @@ describe('template transform', () => {
     expect(out).toContain(`:alt="$t('message.hi')"`)
     expect(out).toContain(`:title="$t('message.nested.greet')"`)
   })
+
+  test('interpolation transform', async () => {
+    const code = `
+      <template>
+        <div>{{ 'hello world' }}</div>
+        <div>{{ 'hi' }}</div>
+        <div>{{ 'greetings' }}</div>
+        <div>{{ 'notMatch' }}</div>
+      </template>
+    `
+    const out = await testFunc(code)
+    expect(out).toContain(`<div>{{ $t('message.hello') }}</div>`)
+    expect(out).toContain(`<div>{{ $t('message.hi') }}</div>`)
+    expect(out).toContain(`<div>{{ $t('message.nested.greet') }}</div>`)
+    expect(out).toContain(`<div>{{ 'notMatch' }}</div>`)
+  })
+
+  test('dynamic attribute binding transform', async () => {
+    const code = `
+      <template>
+        <input :placeholder="'hello world'" />
+        <img :alt="'hi'" src="image.jpg" />
+        <button :title="'greetings'">Click me</button>
+        <div :data-label="'notMatch'">Content</div>
+      </template>
+    `
+    const out = await testFunc(code)
+    expect(out).toContain(`:placeholder="$t('message.hello')"`)
+    expect(out).toContain(`:alt="$t('message.hi')"`)
+    expect(out).toContain(`:title="$t('message.nested.greet')"`)
+    expect(out).toContain(`:data-label="'notMatch'"`)
+  })
+
+  test('template syntax error should throw friendly error', async () => {
+    const code = `
+      <template>
+        <div>hello world</div>
+        <div>hi</div>
+        <div>greetings
+      </template>
+    `
+    let errorMsg = ''
+    try {
+      await testFunc(code)
+    } catch (e: any) {
+      errorMsg = e.message
+    }
+    expect(errorMsg).toMatch(/template parse error/i)
+  })
+
+  test('no template section should not throw', async () => {
+    const code = `
+      <script setup>const a = 1</script>
+    `
+    let error = null
+    try {
+      await testFunc(code)
+    } catch (e) {
+      error = e
+    }
+    expect(error).toBe(null)
+  })
 }) 

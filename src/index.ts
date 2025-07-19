@@ -20,8 +20,12 @@ export async function start(sourceCode: string, isMatchedStr: (target: string) =
       = descriptor.scriptSetup?.content ?? descriptor.script?.content
     const templateCode = descriptor.template?.content
     if (templateCode) {
-      const templateOut = await templateTransformer(templateCode, isMatchedStr)
-      result = result.replace(templateRegexp, templateOut)
+      try {
+        const templateOut = await templateTransformer(templateCode, isMatchedStr)
+        result = result.replace(templateRegexp, templateOut)
+      } catch (e: any) {
+        throw new Error('[auto-i18n] template parse error: ' + (e && e.message ? e.message : e))
+      }
     }
     if (scriptCode) {
       const scriptOut = await transformAsync(scriptCode, {
