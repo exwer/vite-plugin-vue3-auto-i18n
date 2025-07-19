@@ -28,9 +28,10 @@ const messages = {
 }
 
 const i18n = createI18n({
-  locale: 'zh',
+  locale: 'zh', // 默认使用中文
   fallbackLocale: 'en',
-  messages
+  messages,
+  legacy: false // 确保使用 Composition API
 })
 
 createApp(App).use(i18n).mount('#app')
