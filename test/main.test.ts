@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'vitest'
+import { describe, expect, test, vi } from 'vitest'
 import Vue3I18n, { AutoI18nOptions } from '../src/index'
 import { getMatchedMsgPath } from '../src/utils'
 
@@ -238,5 +238,88 @@ describe('plugin options', () => {
     const out = await plugin.transform(code, 'test.vue')
     expect(out?.code).toContain(`t('auto.notMatch')`)
     expect(out?.code).toContain(`$t('auto.notMatch')`)
+  })
+})
+
+describe('error handling', () => {
+  test('template syntax error with detailed message', async () => {
+    const code = `
+      <template>
+        <div>hello world</div>
+        <div>hi</div>
+        <div>greetings
+      </template>
+    `
+    let errorMsg = ''
+    try {
+      await testFunc(code)
+    } catch (e: any) {
+      errorMsg = e.message
+    }
+    expect(errorMsg).toMatch(/template parse error/i)
+    expect(errorMsg).toMatch(/missing end tag/i)
+  })
+
+  test('script syntax error with detailed message', async () => {
+    const code = `
+      <script setup>
+        const a = 'hello world'
+        const b = 'hi'
+        const c = 
+      </script>
+    `
+    let errorMsg = ''
+    try {
+      await testFunc(code)
+    } catch (e: any) {
+      errorMsg = e.message
+    }
+    expect(errorMsg).toMatch(/script parse error/i)
+  })
+
+  test('invalid locale configuration', async () => {
+    let errorMsg = ''
+    try {
+      Vue3I18n({} as any, {})
+    } catch (e: any) {
+      errorMsg = e.message
+    }
+    expect(errorMsg).toMatch(/invalid locale configuration/i)
+  })
+
+  test('debug mode shows transformation info', async () => {
+    const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
+    const plugin = Vue3I18n(locale, { debug: true })
+    const code = `<template><div>hello world</div></template>`
+    
+    // @ts-ignore
+    await plugin.transform(code, 'test.vue')
+    
+    expect(consoleSpy).toHaveBeenCalledWith('[auto-i18n] transformed: test.vue')
+    consoleSpy.mockRestore()
+  })
+
+  test('warning for empty template', async () => {
+    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const plugin = Vue3I18n(locale, {})
+    const code = `<script setup>const a = 1</script>`
+    
+    // @ts-ignore
+    await plugin.transform(code, 'test.vue')
+    
+    expect(consoleSpy).toHaveBeenCalledWith('[auto-i18n] warning: No template found in test.vue')
+    consoleSpy.mockRestore()
+  })
+
+  test('warning for empty script', async () => {
+    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const plugin = Vue3I18n(locale, {})
+    const code = `<template><div>hello world</div></template>`
+    
+    // @ts-ignore
+    await plugin.transform(code, 'test.vue')
+    
+    expect(consoleSpy).toHaveBeenCalledWith('[auto-i18n] warning: No script found in test.vue')
+    consoleSpy.mockRestore()
   })
 }) 
