@@ -10,7 +10,7 @@ export type LocaleMsg = Record<Language, Record<string, string | Record<any, any
 export async function start(sourceCode: string, isMatchedStr: (target: string) => false | string) {
   let result = sourceCode
   // 匹配模板内容
-  const templateRegexp = /(?<=^<template>)([\s\S]*)(?=<\/template>)/g
+  const templateRegexp = /(?<=<template>)([\s\S]*)(?=<\/template>)/g
 
   // 匹配script内容
   const scriptRegexp = /(?<=(<script).*?>)([\s\S]*)(?=<\/script>)/g

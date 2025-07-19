@@ -5,13 +5,14 @@ This plugin is still in beta. Expect bugs!
 
 [![NPM version](https://img.shields.io/npm/v/vite-plugin-vue3-auto-i18n?color=a1b858&label=)](https://www.npmjs.com/package/vite-plugin-vue3-auto-i18n)
 
-## Introdction
+## Introduction
 
 **Auto import** Vue-i18n in every vue sfc files and **auto replace** i18n words in vue sfc files.
 
 - replace matched reactive string variable `ref('xxx')` with `ref(t('xxx'))` in both `setup script` and `setup function`.✅
 - replace matched literal string `'xxx'` with `computed(()=>t('xxx'))` in both `setup script` and `setup function`. ✅
-- replace matched plain node value `xxx` with `$t('xxx')` in template. ❌
+- replace matched plain node value `xxx` with `$t('xxx')` in template. ✅
+- replace matched attribute value (e.g. `placeholder="xxx"`) with `placeholder="{{ $t('xxx') }}"` in template. ✅
 
 ## Installation
 
@@ -78,6 +79,7 @@ import { ref } from 'vue'
 
 <template>
   <div>hello world</div>
+  <input placeholder="hello world" />
 </template>
 ```
 
@@ -94,6 +96,7 @@ const { t } = useI18n()
 
 <template>
   <div>{{ $t('message.hello') }}</div>
+  <input :placeholder="$t('message.hello')" />
 </template>
 ```
 
