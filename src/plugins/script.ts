@@ -124,12 +124,22 @@ function replaceMatchedStr(
     StringLiteral(path) {
       const val = isMatchedStr(path.node.value)
       if (val) {
-        // console.log(JSON.stringify(path.parentPath.node, null, 2))
+        // ref('xxx')
         if (
           path.parentPath.node.type === 'CallExpression'
           && path.parentPath.node.callee.type === 'Identifier'
           && path.parentPath.node.callee.name === 'ref'
-        ) { path.replaceWith(template.statement.ast(`t('${val}')`)) }
+        ) {
+          path.replaceWith(template.statement.ast(`t('${val}')`))
+        }
+        // 数组/对象字面量中的字符串
+        else if (
+          path.parentPath.node.type === 'ArrayExpression'
+          || path.parentPath.node.type === 'ObjectProperty'
+        ) {
+          path.replaceWith(template.expression.ast(`t('${val}')`))
+        }
+        // 其它情况
         else {
           path.replaceWith(template.statement.ast(`computed(()=>t('${val}'))`))
           path.skip()

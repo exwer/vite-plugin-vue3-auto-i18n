@@ -130,6 +130,28 @@ describe('template transform', () => {
     expect(out).toContain(`:data-label="'notMatch'"`)
   })
 
+  test('array/object literal string transform', async () => {
+    const code = `
+      <script setup>
+      const arr = ['hello world', 'hi', 'notMatch']
+      const obj = { a: 'hello world', b: 'hi', c: 'notMatch' }
+      </script>
+      <template>
+        <ul>
+          <li v-for="item in arr" :key="item">{{ item }}</li>
+        </ul>
+        <div>{{ obj.a }}</div>
+        <div>{{ obj.b }}</div>
+        <div>{{ obj.c }}</div>
+      </template>
+    `
+    const out = await testFunc(code)
+    expect(out).toContain(`[t('message.hello'), t('message.hi'), 'notMatch']`)
+    expect(out).toContain(`a: t('message.hello')`)
+    expect(out).toContain(`b: t('message.hi')`)
+    expect(out).toContain(`c: 'notMatch'`)
+  })
+
   test('template syntax error should throw friendly error', async () => {
     const code = `
       <template>

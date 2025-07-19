@@ -15,6 +15,7 @@ This plugin is still in beta. Expect bugs!
 - replace matched attribute value (e.g. `placeholder="xxx"`) with `:placeholder="$t('xxx')"` in template. ✅
 - replace matched dynamic attribute binding (e.g. `:placeholder="'xxx'"`) with `:placeholder="$t('xxx')"` in template. ✅
 - replace matched interpolation (e.g. `{{ 'xxx' }}`) with `{{ $t('xxx') }}` in template. ✅
+- replace matched string in array/object literal (e.g. `[ 'xxx', ... ]` or `{ a: 'xxx' }`) with `t('xxx')` in script. ✅
 - Friendly error message when template syntax error occurs. ✅
 
 ## Installation
