@@ -226,4 +226,17 @@ describe('plugin options', () => {
     expect(out.code).toContain(`t('custom.key')`)
     expect(out.code).toContain(`$t('custom.key')`)
   })
+  test('keyGenerator', async () => {
+    const plugin = Vue3I18n(baseLocale, {
+      keyGenerator: (txt) => 'auto.' + txt.replace(/\s+/g, '_')
+    })
+    const code = `
+      <script setup>const a = 'notMatch'</script>
+      <template><div>notMatch</div></template>
+    `
+    // @ts-ignore
+    const out = await plugin.transform(code, 'test.vue')
+    expect(out?.code).toContain(`t('auto.notMatch')`)
+    expect(out?.code).toContain(`$t('auto.notMatch')`)
+  })
 }) 

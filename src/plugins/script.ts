@@ -122,6 +122,8 @@ function replaceMatchedStr(
 ) {
   node.traverse({
     StringLiteral(path) {
+      // 跳过 import ... from 'xxx'
+      if (path.parentPath.node.type === 'ImportDeclaration') return
       const val = isMatchedStr(path.node.value)
       if (val) {
         // ref('xxx')
@@ -130,7 +132,7 @@ function replaceMatchedStr(
           && path.parentPath.node.callee.type === 'Identifier'
           && path.parentPath.node.callee.name === 'ref'
         ) {
-          path.replaceWith(template.statement.ast(`t('${val}')`))
+          path.replaceWith(template.expression.ast(`t('${val}')`))
         }
         // 数组/对象字面量中的字符串
         else if (

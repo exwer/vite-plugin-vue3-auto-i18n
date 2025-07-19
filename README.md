@@ -83,6 +83,7 @@ interface AutoI18nOptions {
   exclude?: (string | RegExp)[] // Exclude files by path or pattern
   customMatcher?: (text: string) => string | false // Custom match function
   debug?: boolean // Print debug info (default: false)
+  keyGenerator?: (text: string) => string // Custom key generator
 }
 ```
 
@@ -93,6 +94,7 @@ import autoI18n from 'vite-plugin-vue3-auto-i18n'
 export default defineConfig({
   plugins: [
     autoI18n(locale, {
+      keyGenerator: (txt) => 'auto.' + txt.replace(/\s+/g, '_'),
       enableScript: true,
       enableTemplate: true,
       exclude: ['node_modules', /test\.vue$/],

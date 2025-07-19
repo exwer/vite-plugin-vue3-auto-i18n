@@ -12,6 +12,7 @@ export interface AutoI18nOptions {
   enableTemplate?: boolean
   exclude?: (string | RegExp)[]
   customMatcher?: (text: string) => string | false
+  keyGenerator?: (text: string) => string
   debug?: boolean
 }
 
@@ -57,6 +58,7 @@ export default function Vue3I18n(locale: LocaleMsg, options: AutoI18nOptions = {
     enableTemplate = true,
     exclude = [],
     customMatcher,
+    keyGenerator,
     debug = false,
   } = options
 
@@ -66,13 +68,22 @@ export default function Vue3I18n(locale: LocaleMsg, options: AutoI18nOptions = {
     )
   }
 
+  function matchOrGenerateKey(text: string) {
+    if (customMatcher) {
+      const res = customMatcher(text)
+      if (res) return res
+    }
+    const matched = getMatchedMsgPath(locale, text)
+    if (matched) return matched
+    if (keyGenerator) return keyGenerator(text)
+    return false
+  }
+
   return {
     name: 'vite-plugin-vue3-i18n',
     async transform(sourceCode: string, id: string) {
       if (!id.endsWith('.vue') || isExcluded(id)) return
-      const isMatchedStr = customMatcher
-        ? (target: string) => customMatcher(target)
-        : (target: string) => getMatchedMsgPath(locale, target)
+      const isMatchedStr = matchOrGenerateKey
       let result = sourceCode
       try {
         const descriptor = VueCompiler.parse(sourceCode).descriptor
