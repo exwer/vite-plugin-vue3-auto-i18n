@@ -2,7 +2,7 @@
   "name": "i18ncraft",
   "version": "0.1.0-beta.2",
   "packageManager": "pnpm@10.13.1",
-  "description": "🚀 i18nCraft - The modern CLI toolkit for batch internationalization (i18n) refactoring and automation. Effortlessly scan, transform, and manage i18n keys in Vue and beyond.",
+  "description": "🚀 Professional internationalization automation tool with intelligent batch text transformation and enterprise-grade error handling.",
   "author": "exwer",
   "license": "MIT",
   "funding": "https://github.com/sponsors/exwer",
@@ -15,13 +15,14 @@
     "url": "https://github.com/exwer/i18ncraft/issues"
   },
   "keywords": [
-    "vue3",
-    "react",
     "i18n",
+    "internationalization",
+    "localization",
+    "vue",
     "cli",
-    "auto",
-    "vue-i18n",
-    "react-i18n"
+    "automation",
+    "transformation",
+    "typescript"
   ],
   "sideEffects": false,
   "exports": {
@@ -46,11 +47,15 @@
     "i18ncraft": "./dist/i18ncraft.cjs"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "README.zh.md"
   ],
   "scripts": {
+    "build": "unbuild",
     "lint": "eslint .",
     "release": "bumpp --commit --push --tag && pnpm publish",
+    "prepublishOnly": "npm run build && npm run test:once",
     "esno": "esno src/index.ts",
     "test": "vitest",
     "test:once": "vitest run",
