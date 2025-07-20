@@ -1,5 +1,6 @@
-import * as recast from 'recast'
-import { TransformFormat, DEFAULT_TRANSFORM_FORMAT } from '../core/transform'
+import recast from 'recast'
+import type { TransformFormat } from '../types'
+import { DEFAULT_TRANSFORM_FORMAT } from '../core/transform'
 import { formatKey } from '../utils'
 
 export interface ScriptTransformOptions {

@@ -1,31 +1,24 @@
-import { parse as parseSFC } from '@vue/compiler-sfc'
+import { parse } from '@vue/compiler-sfc'
 import templateTransformer from '../plugins/template'
 import { transformScript } from '../plugins/script'
-import { getMatchedMsgPath, LocaleConfig, formatKey, createError, ErrorCode } from '../utils'
+import { getMatchedMsgPath } from '../utils'
+import { formatKey } from '../utils'
+import { createError, ErrorCode } from '../utils/errors'
+import type { 
+  TransformOptions, 
+  LocaleConfig, 
+  TransformFormat,
+  FileProcessResult 
+} from '../types'
 
-// 默认的 Vue 转换格式
-export const DEFAULT_TRANSFORM_FORMAT = {
+// 默认转换格式
+export const DEFAULT_TRANSFORM_FORMAT: TransformFormat = {
   template: (key: string) => `$t('${key}')`,
   script: (key: string) => `computed(() => $t('${key}'))`,
   interpolation: (key: string) => `$t('${key}')`
 }
 
-export interface TransformFormat {
-  template: string | ((key: string) => string)
-  script: string | ((key: string) => string)
-  interpolation: string | ((key: string) => string)
-}
-
-export interface TransformOptions {
-  locale: LocaleConfig
-  enableScript?: boolean
-  enableTemplate?: boolean
-  customMatcher?: (text: string) => string | false
-  keyGenerator?: (text: string) => string
-  debug?: boolean
-  transformFormat?: TransformFormat
-}
-
+// 匹配或生成键的辅助函数
 export function matchOrGenerateKey(
   locale: LocaleConfig,
   customMatcher: TransformOptions['customMatcher'],
@@ -135,4 +128,17 @@ export async function transformSFC(
   }
   
   return result
+}
+
+// 解析 SFC 的辅助函数
+function parseSFC(sourceCode: string) {
+  try {
+    return parse(sourceCode)
+  } catch (error) {
+    throw createError(
+      ErrorCode.PARSE_ERROR,
+      'Failed to parse Vue SFC',
+      { originalError: error }
+    )
+  }
 } 

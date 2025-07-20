@@ -1,5 +1,6 @@
-import { baseParse, NodeTypes } from '@vue/compiler-dom'
-import { TransformFormat, DEFAULT_TRANSFORM_FORMAT } from '../core/transform'
+import { parse, NodeTypes } from '@vue/compiler-dom'
+import type { TransformFormat } from '../types'
+import { DEFAULT_TRANSFORM_FORMAT } from '../core/transform'
 import { formatKey } from '../utils'
 
 interface TextMatch {
@@ -19,7 +20,7 @@ export default async function templateTransformer(
   const format = transformFormat || DEFAULT_TRANSFORM_FORMAT
   
   // 解析 template 为 AST 来获取需要替换的文本位置
-  const ast = baseParse(sourceCode)
+  const ast = parse(sourceCode)
   const matches: TextMatch[] = []
 
   // 递归遍历所有节点，收集需要替换的文本位置
