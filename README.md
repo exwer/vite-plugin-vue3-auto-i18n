@@ -12,6 +12,7 @@
 - ⚡ **批量扫描/转换**：递归扫描指定目录下所有 .vue 文件，自动替换文本为 $t('key') 调用
 - 🧩 **配置驱动**：通过配置文件灵活指定扫描目录、输出目录、语言包等
 - 📝 **支持 script/template**：同时转换 <template> 和 <script setup> 区域的字符串
+- 🎨 **自定义转换格式**：支持自定义转换格式，适配不同的 i18n 库和框架
 - 🛡️ **健壮错误处理**：详细的语法错误、配置错误提示，便于定位问题
 - 🧪 **完善测试**：内置 Vitest 测试，确保转换逻辑可靠
 - 🐾 **保持目录结构**：输出目录结构与源目录一致，便于集成
@@ -73,6 +74,110 @@ npx i18ncraft
 
 ---
 
+## 🎨 自定义转换格式
+
+i18ncraft 支持自定义转换格式，让您可以根据不同的 i18n 库和框架需求进行适配。
+
+### 默认格式（Vue + vue-i18n）
+
+如果不指定 `transformFormat`，将使用默认的 Vue 格式：
+
+```js
+const defaultFormat = {
+  template: (key) => `$t('${key}')`,
+  script: (key) => `computed(() => $t('${key}'))`,
+  interpolation: (key) => `$t('${key}')`
+}
+```
+
+### 自定义格式配置
+
+```js
+module.exports = {
+  scanDir: 'src',
+  outDir: 'i18n_out',
+  exts: ['.vue'],
+  locale: { /* ... */ },
+  
+  // 自定义转换格式
+  transformFormat: {
+    // 模板中的文本转换格式
+    template: (key) => `$t('${key}')`,
+    // 脚本中的文本转换格式
+    script: (key) => `computed(() => $t('${key}'))`,
+    // 插值表达式转换格式
+    interpolation: (key) => `$t('${key}')`
+  }
+}
+```
+
+### 常用格式预设
+
+#### Vue + vue-i18n（默认）
+```js
+{
+  template: (key) => `$t('${key}')`,
+  script: (key) => `computed(() => $t('${key}'))`,
+  interpolation: (key) => `$t('${key}')`
+}
+```
+
+#### Vue + i18next
+```js
+{
+  template: (key) => `$t('${key}')`,
+  script: (key) => `computed(() => $t('${key}'))`,
+  interpolation: (key) => `$t('${key}')`
+}
+```
+
+#### React + react-i18next
+```js
+{
+  template: (key) => `{t('${key}')}`,
+  script: (key) => `useMemo(() => t('${key}'), [t])`,
+  interpolation: (key) => `t('${key}')`
+}
+```
+
+#### Svelte + svelte-i18n
+```js
+{
+  template: (key) => `$_('${key}')`,
+  script: (key) => `derived(() => $_('${key}'))`,
+  interpolation: (key) => `$_('${key}')`
+}
+```
+
+#### 自定义 i18n 库
+```js
+{
+  template: (key) => `i18n.get('${key}')`,
+  script: (key) => `reactive(() => i18n.get('${key}'))`,
+  interpolation: (key) => `i18n.get('${key}')`
+}
+```
+
+### 字符串模板格式
+
+除了函数格式，还支持字符串模板：
+
+```js
+{
+  template: 'i18n.t("{{key}}")',
+  script: 'computed(() => i18n.t("{{key}}"))',
+  interpolation: 'i18n.t("{{key}}")'
+}
+```
+
+### 格式说明
+
+- **template**: 用于转换模板中的文本节点和属性值
+- **script**: 用于转换脚本中的字符串字面量
+- **interpolation**: 用于转换插值表达式中的字符串
+
+---
+
 ## 📝 示例
 
 ### 源文件 src/Hello.vue
@@ -88,19 +193,38 @@ const obj = { a: 'hello world', b: 'hi', c: 'notMatch' }
 </template>
 ```
 
-### 转换后 i18n_out/Hello.vue
+### 转换后 i18n_out/Hello.vue（默认格式）
 ```vue
 <script setup>
-const arr = [$t('message.hello'), $t('message.hi'), 'notMatch']
-const obj = {
+import { computed } from 'vue'
+const arr = [computed(() => $t('message.hello')), computed(() => $t('message.hi')), 'notMatch']
+const obj = computed(() => ({
   a: $t('message.hello'),
   b: $t('message.hi'),
   c: 'notMatch'
-}
+}))
 </script>
 <template>
   <input :placeholder="$t('message.hello')" />
   <div>{{ $t('message.hi') }}</div>
+  <div>{{ obj.a }}</div>
+</template>
+```
+
+### 转换后 i18n_out/Hello.vue（自定义格式）
+```vue
+<script setup>
+import { reactive } from 'vue'
+const arr = [reactive(() => $t('message.hello')), reactive(() => $t('message.hi')), 'notMatch']
+const obj = reactive(() => ({
+  a: $t('message.hello'),
+  b: $t('message.hi'),
+  c: 'notMatch'
+}))
+</script>
+<template>
+  <input :placeholder="$t('message.hello')" />
+  <div>{{ t('message.hi') }}</div>
   <div>{{ obj.a }}</div>
 </template>
 ```
@@ -139,6 +263,8 @@ pnpm exec vitest run
   不会，所有转换结果输出到 outDir，源文件不变。
 - **Q: 支持自定义 key 生成或匹配吗？**
   支持，可在 locale 配置和后续扩展中自定义。
+- **Q: 如何适配不同的 i18n 库？**
+  使用 `transformFormat` 配置自定义转换格式。
 
 ---
 
@@ -147,6 +273,7 @@ pnpm exec vitest run
 - 工具会自动为用到 computed 的脚本插入 `import { computed } from 'vue'`，无需手动引入。
 - 但请确保你的脚本中已手动引入 `useI18n` 并正确初始化 $t，否则 $t 可能不可用。
 - 数组/对象字面量中的国际化字符串也已自动用 computed 包裹，支持响应式国际化切换。
+- 自定义格式时，请确保格式函数返回有效的 JavaScript 代码。
 
 ---
 

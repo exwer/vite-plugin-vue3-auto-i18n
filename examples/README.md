@@ -1,6 +1,6 @@
-# Vue 3 Auto I18n Plugin Example
+# Example
 
-This example demonstrates all the features of the `vite-plugin-vue3-auto-i18n` plugin.
+This example demonstrates all the features of the `i18ncraft` plugin.
 
 ## Features Demonstrated
 
