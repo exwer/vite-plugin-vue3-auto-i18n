@@ -1,4 +1,6 @@
 import { baseParse, NodeTypes } from '@vue/compiler-dom'
+import { TransformFormat, DEFAULT_TRANSFORM_FORMAT } from '../core/transform'
+import { formatKey } from '../utils'
 
 interface TextMatch {
   start: number
@@ -11,27 +13,42 @@ interface TextMatch {
 export default async function templateTransformer(
   sourceCode: string,
   isMatchedStr: (target: string) => false | string,
+  transformFormat?: TransformFormat
 ) {
+  // 使用默认格式或用户提供的格式
+  const format = transformFormat || DEFAULT_TRANSFORM_FORMAT
+  
   // 解析 template 为 AST 来获取需要替换的文本位置
   const ast = baseParse(sourceCode)
   const matches: TextMatch[] = []
 
   // 递归遍历所有节点，收集需要替换的文本位置
-  function collectMatches(node: any, offset: number = 0) {
+  function collectMatches(node: any) {
     if (node.type === NodeTypes.TEXT) {
+      // 处理文本节点，去除首尾空白字符
       const content = node.content.trim()
-      const matched = isMatchedStr(content)
-      if (matched && content.length > 0) {
-        // 找到原始文本在源代码中的位置
-        const textStart = sourceCode.indexOf(content, offset)
-        if (textStart !== -1) {
-          matches.push({
-            start: textStart,
-            end: textStart + content.length,
-            content,
-            replacement: `$t('${matched}')`,
-            type: 'text'
-          })
+      if (content.length > 0) {
+        const matched = isMatchedStr(content)
+        if (matched) {
+          // 直接使用 AST 节点提供的位置信息
+          const nodeStart = node.loc.start.offset
+          const nodeEnd = node.loc.end.offset
+          const nodeContent = node.content
+          
+          // 找到实际文本内容在节点中的位置
+          const contentStart = nodeContent.indexOf(content)
+          if (contentStart !== -1) {
+            const actualStart = nodeStart + contentStart
+            const actualEnd = actualStart + content.length
+            
+            matches.push({
+              start: actualStart,
+              end: actualEnd,
+              content,
+              replacement: formatKey(matched, format.template),
+              type: 'text'
+            })
+          }
         }
       }
     }
@@ -44,17 +61,17 @@ export default async function templateTransformer(
         const str = raw.slice(1, -1)
         const matched = isMatchedStr(str)
         if (matched && str.length > 0) {
-          // 找到原始插值在源代码中的位置
-          const interpolationStart = sourceCode.indexOf(raw, offset)
-          if (interpolationStart !== -1) {
-            matches.push({
-              start: interpolationStart,
-              end: interpolationStart + raw.length,
-              content: raw,
-              replacement: `$t('${matched}')`,
-              type: 'interpolation'
-            })
-          }
+          // 直接使用 AST 节点提供的位置信息，替换整个插值表达式
+          const nodeStart = node.loc.start.offset
+          const nodeEnd = node.loc.end.offset
+          
+          matches.push({
+            start: nodeStart,
+            end: nodeEnd,
+            content: `{{ ${raw} }}`,
+            replacement: `{{ ${formatKey(matched, format.interpolation)} }}`,
+            type: 'interpolation'
+          })
         }
       }
     }
@@ -67,15 +84,23 @@ export default async function templateTransformer(
           const content = prop.value.content.trim()
           const matched = isMatchedStr(content)
           if (matched && content.length > 0) {
-            // 找到原始属性值在源代码中的位置
-            const attrPattern = `${prop.name}="${content}"`
-            const attrStart = sourceCode.indexOf(attrPattern, offset)
-            if (attrStart !== -1) {
+            // 直接使用 AST 节点提供的位置信息
+            const propStart = prop.loc.start.offset
+            const propEnd = prop.loc.end.offset
+            const propContent = sourceCode.substring(propStart, propEnd)
+            
+            // 找到属性值在属性中的位置
+            const valuePattern = `"${content}"`
+            const valueStart = propContent.indexOf(valuePattern)
+            if (valueStart !== -1) {
+              const actualStart = propStart + valueStart + 1 // +1 for quote
+              const actualEnd = actualStart + content.length
+              
               matches.push({
-                start: attrStart,
-                end: attrStart + attrPattern.length,
-                content: attrPattern,
-                replacement: `:${prop.name}="$t('${matched}')"`,
+                start: actualStart,
+                end: actualEnd,
+                content: `${prop.name}="${content}"`,
+                replacement: `:${prop.name}="${formatKey(matched, format.template)}"`,
                 type: 'attribute'
               })
             }
@@ -89,25 +114,26 @@ export default async function templateTransformer(
             const str = raw.slice(1, -1)
             const matched = isMatchedStr(str)
             if (matched && str.length > 0) {
-              // 找到原始绑定表达式在源代码中的位置
-              const bindStart = sourceCode.indexOf(raw, offset)
-              if (bindStart !== -1) {
-                matches.push({
-                  start: bindStart,
-                  end: bindStart + raw.length,
-                  content: raw,
-                  replacement: `$t('${matched}')`,
-                  type: 'binding'
-                })
-              }
+              // 直接使用 AST 节点提供的位置信息，替换整个绑定表达式
+              const expStart = prop.exp.loc.start.offset
+              const expEnd = prop.exp.loc.end.offset
+              
+              matches.push({
+                start: expStart,
+                end: expEnd,
+                content: raw,
+                replacement: formatKey(matched, format.interpolation),
+                type: 'binding'
+              })
             }
           }
         }
       })
     }
     
+    // 递归处理子节点
     if (node.children) {
-      node.children.forEach((child: any) => collectMatches(child, offset))
+      node.children.forEach((child: any) => collectMatches(child))
     }
   }
   
