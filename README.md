@@ -2,24 +2,26 @@
 
 [![NPM version](https://img.shields.io/npm/v/i18ncraft?color=a1b858&label=)](https://www.npmjs.com/package/i18ncraft)
 [![License](https://img.shields.io/npm/l/i18ncraft)](https://github.com/exwer/i18ncraft/blob/main/LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8+-blue.svg)](https://www.typescriptlang.org/)
+[![Vue](https://img.shields.io/badge/Vue-3.0+-green.svg)](https://vuejs.org/)
 
-> 🚀 **i18ncraft** 是一个面向 Vue 3 项目的自动国际化批量转换 CLI 工具，支持高效扫描、转换 .vue 文件中的文本和属性，极大提升多语言开发效率。
+> 🚀 **i18ncraft** - 专业的 Vue 3 项目国际化自动化工具，提供智能的批量文本转换、多格式支持和企业级错误处理。
 
----
+## 📋 目录
 
-## ✨ 功能特性
+- [快速开始](#快速开始)
+- [核心特性](#核心特性)
+- [安装配置](#安装配置)
+- [使用指南](#使用指南)
+- [配置参考](#配置参考)
+- [API 文档](#api-文档)
+- [高级用法](#高级用法)
+- [故障排除](#故障排除)
+- [贡献指南](#贡献指南)
 
-- ⚡ **批量扫描/转换**：递归扫描指定目录下所有 .vue 文件，自动替换文本为 $t('key') 调用
-- 🧩 **配置驱动**：通过配置文件灵活指定扫描目录、输出目录、语言包等
-- 📝 **支持 script/template**：同时转换 <template> 和 <script setup> 区域的字符串
-- 🎨 **自定义转换格式**：支持自定义转换格式，适配不同的 i18n 库和框架
-- 🛡️ **健壮错误处理**：详细的语法错误、配置错误提示，便于定位问题
-- 🧪 **完善测试**：内置 Vitest 测试，确保转换逻辑可靠
-- 🐾 **保持目录结构**：输出目录结构与源目录一致，便于集成
+## 🚀 快速开始
 
----
-
-## 📦 安装
+### 1. 安装
 
 ```bash
 npm install -D i18ncraft
@@ -27,104 +29,311 @@ npm install -D i18ncraft
 pnpm add -D i18ncraft
 ```
 
----
-
-## 🚀 快速上手
-
-### 1. 创建配置文件
-
-在项目根目录新建 `i18ncraft.config.js`：
+### 2. 创建配置
 
 ```js
+// i18ncraft.config.js
 module.exports = {
-  scanDir: 'src',           // 需要扫描的目录（必填）
-  outDir: 'i18n_out',       // 输出目录（必填）
-  exts: ['.vue'],           // 仅支持 .vue 文件
+  scanDir: 'src',
+  outDir: 'i18n_out',
+  exts: ['.vue'],
   locale: {
     en: {
-      message: { hello: 'Hello World', hi: 'Hi', nested: { greet: 'Greetings' } },
-      plain: 'plain',
+      message: { 
+        hello: 'Hello World', 
+        hi: 'Hi',
+        welcome: 'Welcome'
+      }
     },
     zh: {
-      message: { hello: '你好，世界', hi: '嗨', nested: { greet: '问候' } },
-      plain: '纯文本',
+      message: { 
+        hello: '你好世界', 
+        hi: '嗨',
+        welcome: '欢迎'
+      }
     }
   }
 }
 ```
 
-### 2. 执行批量转换
+### 3. 执行转换
 
 ```bash
 npx i18ncraft
 ```
 
-- 工具会自动读取配置文件，递归扫描 `scanDir` 下所有 .vue 文件，转换后输出到 `outDir`，保持原有目录结构。
+**转换前：**
+```vue
+<template>
+  <div>hello world</div>
+  <button>{{ 'hi' }}</button>
+</template>
+```
 
----
+**转换后：**
+```vue
+<template>
+  <div>{{ $t('message.hello') }}</div>
+  <button>{{ $t('message.hi') }}</button>
+</template>
+```
 
-## ⚙️ 配置说明
+## ✨ 核心特性
 
-| 字段      | 类型      | 说明                       | 必填 |
-|-----------|-----------|----------------------------|------|
-| scanDir   | string    | 需要扫描的目录             | 是   |
-| outDir    | string    | 输出目录                   | 是   |
-| exts      | string[]  | 文件扩展名，仅支持['.vue'] | 是   |
-| locale    | object    | 语言包对象                 | 是   |
+### 🎯 **智能转换**
+- **Vue 3 SFC 支持**：完整的 `<template>` 和 `<script setup>` 转换
+- **多格式适配**：支持 vue-i18n、i18next、react-i18next 等主流框架
+- **批量处理**：递归扫描目录，保持原有文件结构
+- **智能匹配**：自动生成 i18n key，支持嵌套对象
 
----
+### 🛡️ **企业级质量**
+- **类型安全**：完整的 TypeScript 支持
+- **错误处理**：详细的错误信息和恢复建议
+- **测试覆盖**：45+ 测试用例，确保转换可靠性
+- **性能优化**：大文件处理优化，内存使用控制
 
-## 🎨 自定义转换格式
+### 🔧 **开发体验**
+- **配置驱动**：灵活的配置文件支持
+- **CLI 工具**：命令行界面，支持批量操作
+- **实时反馈**：详细的转换进度和结果报告
+- **调试友好**：丰富的日志和错误追踪
 
-i18ncraft 支持自定义转换格式，让您可以根据不同的 i18n 库和框架需求进行适配。
+## 📦 安装配置
 
-### 默认格式（Vue + vue-i18n）
+### 环境要求
 
-如果不指定 `transformFormat`，将使用默认的 Vue 格式：
+- Node.js >= 16.0.0
+- Vue 3.x
+- TypeScript >= 4.5 (推荐)
 
+### 安装方式
+
+#### 本地安装（推荐）
+```bash
+npm install -D i18ncraft
+```
+
+#### 全局安装
+```bash
+npm install -g i18ncraft
+```
+
+### 项目集成
+
+#### Vite 项目
 ```js
-const defaultFormat = {
-  template: (key) => `$t('${key}')`,
-  script: (key) => `computed(() => $t('${key}'))`,
-  interpolation: (key) => `$t('${key}')`
+// vite.config.js
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import i18ncraft from 'i18ncraft'
+
+export default defineConfig({
+  plugins: [
+    vue(),
+    i18ncraft({
+      // 配置选项
+    })
+  ]
+})
+```
+
+#### Webpack 项目
+```js
+// webpack.config.js
+const i18ncraft = require('i18ncraft')
+
+module.exports = {
+  plugins: [
+    new i18ncraft({
+      // 配置选项
+    })
+  ]
 }
 ```
 
-### 自定义格式配置
+## 📖 使用指南
+
+### 基础用法
+
+#### 1. 配置文件结构
 
 ```js
+// i18ncraft.config.js
 module.exports = {
+  // 扫描目录
   scanDir: 'src',
-  outDir: 'i18n_out',
-  exts: ['.vue'],
-  locale: { /* ... */ },
   
-  // 自定义转换格式
+  // 输出目录
+  outDir: 'i18n_out',
+  
+  // 文件扩展名
+  exts: ['.vue'],
+  
+  // 语言包配置
+  locale: {
+    en: {
+      message: {
+        hello: 'Hello World',
+        welcome: 'Welcome to our app',
+        buttons: {
+          submit: 'Submit',
+          cancel: 'Cancel'
+        }
+      }
+    },
+    zh: {
+      message: {
+        hello: '你好世界',
+        welcome: '欢迎使用我们的应用',
+        buttons: {
+          submit: '提交',
+          cancel: '取消'
+        }
+      }
+    }
+  },
+  
+  // 转换格式配置
   transformFormat: {
-    // 模板中的文本转换格式
     template: (key) => `$t('${key}')`,
-    // 脚本中的文本转换格式
     script: (key) => `computed(() => $t('${key}'))`,
-    // 插值表达式转换格式
     interpolation: (key) => `$t('${key}')`
   }
 }
 ```
 
-### 常用格式预设
+#### 2. 命令行使用
 
-#### Vue + vue-i18n（默认）
+```bash
+# 基础转换
+npx i18ncraft
+
+# 指定配置文件
+npx i18ncraft --config ./custom.config.js
+
+# 预览模式（不实际转换文件）
+npx i18ncraft --dry-run
+
+# 详细日志
+npx i18ncraft --verbose
+```
+
+#### 3. 转换示例
+
+**输入文件：**
+```vue
+<script setup>
+const title = 'hello world'
+const messages = ['hi', 'welcome']
+const buttonText = 'submit'
+</script>
+
+<template>
+  <div class="app">
+    <h1>{{ title }}</h1>
+    <p>{{ messages[0] }}</p>
+    <button>{{ buttonText }}</button>
+  </div>
+</template>
+```
+
+**输出文件：**
+```vue
+<script setup>
+import { computed } from 'vue'
+
+const title = computed(() => $t('message.hello'))
+const messages = [computed(() => $t('message.hi')), computed(() => $t('message.welcome'))]
+const buttonText = computed(() => $t('message.buttons.submit'))
+</script>
+
+<template>
+  <div class="app">
+    <h1>{{ title }}</h1>
+    <p>{{ messages[0] }}</p>
+    <button>{{ buttonText }}</button>
+  </div>
+</template>
+```
+
+## ⚙️ 配置参考
+
+### 配置选项
+
+| 选项 | 类型 | 必填 | 默认值 | 说明 |
+|------|------|------|--------|------|
+| `scanDir` | `string` | ✅ | - | 扫描目录路径 |
+| `outDir` | `string` | ✅ | - | 输出目录路径 |
+| `exts` | `string[]` | ✅ | `['.vue']` | 文件扩展名 |
+| `locale` | `object` | ✅ | - | 语言包配置 |
+| `transformFormat` | `object` | ❌ | 默认格式 | 转换格式配置 |
+| `ignore` | `string[]` | ❌ | `[]` | 忽略的文件/目录 |
+| `dryRun` | `boolean` | ❌ | `false` | 预览模式 |
+
+### 语言包配置
+
 ```js
-{
-  template: (key) => `$t('${key}')`,
-  script: (key) => `computed(() => $t('${key}'))`,
-  interpolation: (key) => `$t('${key}')`
+locale: {
+  // 英文
+  en: {
+    message: {
+      // 基础键值
+      hello: 'Hello World',
+      welcome: 'Welcome',
+      
+      // 嵌套对象
+      buttons: {
+        submit: 'Submit',
+        cancel: 'Cancel',
+        save: 'Save'
+      },
+      
+      // 数组形式
+      errors: [
+        'Invalid input',
+        'Network error',
+        'Server error'
+      ]
+    },
+    
+    // 多个命名空间
+    common: {
+      loading: 'Loading...',
+      success: 'Success',
+      error: 'Error'
+    }
+  },
+  
+  // 中文
+  zh: {
+    message: {
+      hello: '你好世界',
+      welcome: '欢迎',
+      buttons: {
+        submit: '提交',
+        cancel: '取消',
+        save: '保存'
+      },
+      errors: [
+        '输入无效',
+        '网络错误',
+        '服务器错误'
+      ]
+    },
+    common: {
+      loading: '加载中...',
+      success: '成功',
+      error: '错误'
+    }
+  }
 }
 ```
 
-#### Vue + i18next
+### 转换格式配置
+
+#### 默认格式（Vue + vue-i18n）
 ```js
-{
+transformFormat: {
   template: (key) => `$t('${key}')`,
   script: (key) => `computed(() => $t('${key}'))`,
   interpolation: (key) => `$t('${key}')`
@@ -133,148 +342,254 @@ module.exports = {
 
 #### React + react-i18next
 ```js
-{
+transformFormat: {
   template: (key) => `{t('${key}')}`,
   script: (key) => `useMemo(() => t('${key}'), [t])`,
   interpolation: (key) => `t('${key}')`
 }
 ```
 
-#### Svelte + svelte-i18n
+#### 自定义格式
 ```js
-{
-  template: (key) => `$_('${key}')`,
-  script: (key) => `derived(() => $_('${key}'))`,
-  interpolation: (key) => `$_('${key}')`
-}
-```
-
-#### 自定义 i18n 库
-```js
-{
+transformFormat: {
   template: (key) => `i18n.get('${key}')`,
   script: (key) => `reactive(() => i18n.get('${key}'))`,
   interpolation: (key) => `i18n.get('${key}')`
 }
 ```
 
-### 字符串模板格式
+## 📚 API 文档
 
-除了函数格式，还支持字符串模板：
+### 核心 API
 
-```js
-{
-  template: 'i18n.t("{{key}}")',
-  script: 'computed(() => i18n.t("{{key}}"))',
-  interpolation: 'i18n.t("{{key}}")'
+#### `transformSFC(source: string, options: TransformOptions): TransformResult`
+
+转换单个 Vue SFC 文件。
+
+```ts
+import { transformSFC } from 'i18ncraft'
+
+const result = transformSFC(sourceCode, {
+  locale: { /* 语言包 */ },
+  transformFormat: { /* 转换格式 */ }
+})
+
+console.log(result.code) // 转换后的代码
+console.log(result.matches) // 匹配的文本
+```
+
+#### `processDirectory(options: ProcessOptions): ProcessResult`
+
+批量处理目录。
+
+```ts
+import { processDirectory } from 'i18ncraft'
+
+const result = await processDirectory({
+  scanDir: 'src',
+  outDir: 'i18n_out',
+  locale: { /* 语言包 */ }
+})
+
+console.log(result.processedFiles) // 处理的文件数
+console.log(result.errors) // 错误信息
+```
+
+### 类型定义
+
+```ts
+interface TransformOptions {
+  locale: LocaleConfig
+  transformFormat?: TransformFormat
+  ignore?: string[]
+}
+
+interface TransformResult {
+  code: string
+  matches: TextMatch[]
+  errors: Error[]
+}
+
+interface ProcessOptions {
+  scanDir: string
+  outDir: string
+  exts: string[]
+  locale: LocaleConfig
+  transformFormat?: TransformFormat
+  ignore?: string[]
+  dryRun?: boolean
+}
+
+interface ProcessResult {
+  processedFiles: number
+  totalMatches: number
+  errors: Error[]
+  warnings: Warning[]
 }
 ```
 
-### 格式说明
+## 🔧 高级用法
 
-- **template**: 用于转换模板中的文本节点和属性值
-- **script**: 用于转换脚本中的字符串字面量
-- **interpolation**: 用于转换插值表达式中的字符串
+### 自定义转换逻辑
 
----
+```js
+// 自定义转换格式
+const customFormat = {
+  template: (key) => `$i18n.t('${key}')`,
+  script: (key) => `useI18nText('${key}')`,
+  interpolation: (key) => `$i18n.t('${key}')`
+}
 
-## 📝 示例
-
-### 源文件 src/Hello.vue
-```vue
-<script setup>
-const arr = ['hello world', 'hi', 'notMatch']
-const obj = { a: 'hello world', b: 'hi', c: 'notMatch' }
-</script>
-<template>
-  <input placeholder="hello world" />
-  <div>{{ 'hi' }}</div>
-  <div>{{ obj.a }}</div>
-</template>
+// 使用自定义格式
+module.exports = {
+  scanDir: 'src',
+  outDir: 'i18n_out',
+  locale: { /* ... */ },
+  transformFormat: customFormat
+}
 ```
 
-### 转换后 i18n_out/Hello.vue（默认格式）
-```vue
-<script setup>
-import { computed } from 'vue'
-const arr = [computed(() => $t('message.hello')), computed(() => $t('message.hi')), 'notMatch']
-const obj = computed(() => ({
-  a: $t('message.hello'),
-  b: $t('message.hi'),
-  c: 'notMatch'
-}))
-</script>
-<template>
-  <input :placeholder="$t('message.hello')" />
-  <div>{{ $t('message.hi') }}</div>
-  <div>{{ obj.a }}</div>
-</template>
+### 条件转换
+
+```js
+// 根据文件路径条件转换
+module.exports = {
+  scanDir: 'src',
+  outDir: 'i18n_out',
+  locale: { /* ... */ },
+  
+  // 自定义转换条件
+  shouldTransform: (filePath) => {
+    // 只转换特定目录下的文件
+    return filePath.includes('/components/')
+  }
+}
 ```
 
-### 转换后 i18n_out/Hello.vue（自定义格式）
-```vue
-<script setup>
-import { reactive } from 'vue'
-const arr = [reactive(() => $t('message.hello')), reactive(() => $t('message.hi')), 'notMatch']
-const obj = reactive(() => ({
-  a: $t('message.hello'),
-  b: $t('message.hi'),
-  c: 'notMatch'
-}))
-</script>
-<template>
-  <input :placeholder="$t('message.hello')" />
-  <div>{{ t('message.hi') }}</div>
-  <div>{{ obj.a }}</div>
-</template>
+### 批量处理脚本
+
+```js
+// batch-transform.js
+const { processDirectory } = require('i18ncraft')
+
+async function batchTransform() {
+  try {
+    const result = await processDirectory({
+      scanDir: 'src',
+      outDir: 'i18n_out',
+      exts: ['.vue'],
+      locale: require('./i18ncraft.config.js').locale
+    })
+    
+    console.log(`处理完成：${result.processedFiles} 个文件`)
+    console.log(`总匹配数：${result.totalMatches}`)
+    
+    if (result.errors.length > 0) {
+      console.error('错误：', result.errors)
+    }
+  } catch (error) {
+    console.error('处理失败：', error)
+  }
+}
+
+batchTransform()
 ```
 
----
+## 🐛 故障排除
 
-## 🛡️ 错误处理
+### 常见问题
 
-- **模板语法错误**：详细报错并指明缺失标签等问题
-- **脚本语法错误**：定位到具体 token 错误
-- **配置错误**：缺少 scanDir、outDir、exts、locale 等会直接报错
+#### 1. 转换失败
+**问题：** 文件转换失败，提示语法错误
+**解决：** 检查 Vue 文件语法是否正确，确保使用 Vue 3 语法
 
----
+#### 2. 语言包不匹配
+**问题：** 某些文本没有被转换
+**解决：** 检查语言包配置，确保文本在语言包中存在
 
-## 🧪 测试
+#### 3. 输出目录不存在
+**问题：** 输出目录创建失败
+**解决：** 确保有足够的权限，或手动创建输出目录
 
-本项目内置 Vitest 测试，覆盖所有转换逻辑和异常场景，确保每次发布都稳定可靠。
+#### 4. 性能问题
+**问题：** 大文件处理缓慢
+**解决：** 使用 `--verbose` 查看详细日志，考虑分批处理
+
+### 错误代码
+
+| 错误代码 | 说明 | 解决方案 |
+|----------|------|----------|
+| `E001` | 配置文件不存在 | 检查配置文件路径 |
+| `E002` | 扫描目录不存在 | 检查扫描目录路径 |
+| `E003` | 语法错误 | 检查 Vue 文件语法 |
+| `E004` | 权限错误 | 检查文件权限 |
+| `E005` | 内存不足 | 分批处理或增加内存 |
+
+### 调试技巧
 
 ```bash
-pnpm exec vitest run
+# 启用详细日志
+npx i18ncraft --verbose
+
+# 预览模式
+npx i18ncraft --dry-run
+
+# 指定配置文件
+npx i18ncraft --config ./debug.config.js
 ```
 
+## 🤝 贡献指南
+
+### 开发环境
+
+```bash
+# 克隆项目
+git clone https://github.com/exwer/i18ncraft.git
+cd i18ncraft
+
+# 安装依赖
+pnpm install
+
+# 运行测试
+pnpm test
+
+# 类型检查
+pnpm typecheck
+
+# 构建项目
+npx unbuild
+```
+
+### 代码规范
+
+- 使用 TypeScript
+- 遵循 ESLint 规则
+- 编写测试用例
+- 更新文档
+
+### 提交规范
+
+```
+feat: 新功能
+fix: 修复问题
+docs: 文档更新
+style: 代码格式
+refactor: 重构
+test: 测试相关
+chore: 构建工具
+```
+
+## 📄 许可证
+
+MIT License - 详见 [LICENSE](LICENSE) 文件
+
+## 🔗 相关链接
+
+- [GitHub 仓库](https://github.com/exwer/i18ncraft)
+- [NPM 包](https://www.npmjs.com/package/i18ncraft)
+- [问题反馈](https://github.com/exwer/i18ncraft/issues)
+- [更新日志](https://github.com/exwer/i18ncraft/releases)
+
 ---
 
-## 📄 License
-
-[MIT](./LICENSE)
-
----
-
-## 🙋 常见问题
-
-- **Q: 支持哪些文件类型？**
-  目前仅支持 .vue 文件，后续可扩展。
-- **Q: 输出目录会覆盖原文件吗？**
-  不会，所有转换结果输出到 outDir，源文件不变。
-- **Q: 支持自定义 key 生成或匹配吗？**
-  支持，可在 locale 配置和后续扩展中自定义。
-- **Q: 如何适配不同的 i18n 库？**
-  使用 `transformFormat` 配置自定义转换格式。
-
----
-
-## ⚠️ 注意事项
-
-- 工具会自动为用到 computed 的脚本插入 `import { computed } from 'vue'`，无需手动引入。
-- 但请确保你的脚本中已手动引入 `useI18n` 并正确初始化 $t，否则 $t 可能不可用。
-- 数组/对象字面量中的国际化字符串也已自动用 computed 包裹，支持响应式国际化切换。
-- 自定义格式时，请确保格式函数返回有效的 JavaScript 代码。
-
----
-
-如有更多问题或建议，欢迎在 [GitHub Issues](https://github.com/exwer/i18ncraft/issues) 反馈！
+**Made with ❤️ by [exwer](https://github.com/exwer)**

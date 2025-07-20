@@ -3,7 +3,7 @@ import { defineBuildConfig } from 'unbuild'
 export default defineBuildConfig({
   entries: [
     'src/index',
-    'bin/auto-i18n',
+    'bin/i18ncraft',
   ],
   declaration: true,
   clean: true,
@@ -19,7 +19,7 @@ export default defineBuildConfig({
       // 确保CLI文件有执行权限
       if (ctx.buildEntries) {
         for (const entry of ctx.buildEntries) {
-          if (entry.path.includes('auto-i18n')) {
+          if (entry.path.includes('i18ncraft')) {
             // 在Windows上不需要设置权限
             if (process.platform !== 'win32') {
               const fs = require('node:fs')

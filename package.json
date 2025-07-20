@@ -43,7 +43,7 @@
     }
   },
   "bin": {
-    "i18ncraft": "./dist/auto-i18n.cjs"
+    "i18ncraft": "./dist/i18ncraft.cjs"
   },
   "files": [
     "dist"
