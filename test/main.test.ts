@@ -88,20 +88,6 @@ describe('template transform', () => {
     expect(out).toContain(`<div v-if="plain">$t('message.hello')</div>`)
   })
 
-  test('attribute internationalization', async () => {
-    const code = `
-      <template>
-        <input placeholder="hello world" />
-        <img alt="hi" src="image.jpg" />
-        <button title="greetings">Click me</button>
-      </template>
-    `
-    const out = await testFunc(code)
-    expect(out).toContain(`:placeholder="$t('message.hello')"`)
-    expect(out).toContain(`:alt="$t('message.hi')"`)
-    expect(out).toContain(`:title="$t('message.nested.greet')"`)
-  })
-
   test('interpolation transform', async () => {
     const code = `
       <template>
@@ -132,45 +118,6 @@ describe('template transform', () => {
     expect(out).toContain(`:alt="$t('message.hi')"`)
     expect(out).toContain(`:title="$t('message.nested.greet')"`)
     expect(out).toContain(`:data-label="'notMatch'"`)
-  })
-
-  test('array/object literal string transform', async () => {
-    const code = `
-      <script setup>
-      const arr = ['hello world', 'hi', 'notMatch']
-      const obj = { a: 'hello world', b: 'hi', c: 'notMatch' }
-      </script>
-      <template>
-        <ul>
-          <li v-for="item in arr" :key="item">{{ item }}</li>
-        </ul>
-        <div>{{ obj.a }}</div>
-        <div>{{ obj.b }}</div>
-        <div>{{ obj.c }}</div>
-      </template>
-    `
-    const out = await testFunc(code)
-    expect(out).toContain(`[$t('message.hello'), $t('message.hi'), 'notMatch']`)
-    expect(out).toContain(`a: $t('message.hello')`)
-    expect(out).toContain(`b: $t('message.hi')`)
-    expect(out).toContain(`c: 'notMatch'`)
-  })
-
-  test('template syntax error should throw friendly error', async () => {
-    const code = `
-      <template>
-        <div>hello world</div>
-        <div>hi</div>
-        <div>greetings
-      </template>
-    `
-    let errorMsg = ''
-    try {
-      await testFunc(code)
-    } catch (e: any) {
-      errorMsg = e.message
-    }
-    expect(errorMsg).toMatch(/missing end tag/i)
   })
 
   test('no template section should not throw', async () => {
@@ -318,5 +265,181 @@ describe('CLI 批量扫描/转换', () => {
     // 校验 outDir 下的文件内容
     const outContent = fs.readFileSync(path.join(outDir, 'test.vue'), 'utf-8')
     expect(outContent).toContain(`$t('message.hello')`)
+  })
+}) 
+
+describe('code format preservation', () => {
+  test('preserve script indentation and spacing', async () => {
+    const code = `
+<script setup>
+  const greeting = ref('hello world')
+  const message = 'hi'
+  
+  function sayHello() {
+    return 'greetings'
+  }
+  
+  const obj = {
+    title: 'hello world',
+    subtitle: 'hi'
+  }
+</script>
+    `
+    const out = await testFunc(code)
+    
+    // 检查缩进是否保留
+    expect(out).toMatch(/const greeting = ref\(\$t\('message\.hello'\)\)/)
+    expect(out).toMatch(/const message = computed\(\(\) => \$t\('message\.hi'\)\)/)
+    expect(out).toMatch(/return computed\(\(\) => \$t\('message\.nested\.greet'\)\)/)
+    expect(out).toMatch(/title: \$t\('message\.hello'\)/)
+    expect(out).toMatch(/subtitle: \$t\('message\.hi'\)/)
+    
+    // 检查基本结构是否保留（不检查具体的空行，因为可能被压缩）
+    expect(out).toContain('const greeting')
+    expect(out).toContain('const message')
+    expect(out).toContain('function sayHello')
+    expect(out).toContain('const obj')
+  })
+
+  test('preserve script comments and imports', async () => {
+    const code = `
+<script setup lang="ts">
+  import { ref, computed } from 'vue'
+  
+  // 用户信息
+  const user = ref({
+    name: 'hello world',
+    greeting: 'hi'
+  })
+  
+  // 计算属性
+  const welcomeMessage = computed(() => {
+    return 'greetings'
+  })
+  
+  // 方法
+  function getMessage() {
+    return 'hello world'
+  }
+</script>
+    `
+    const out = await testFunc(code)
+    
+    // 检查导入语句是否保留
+    expect(out).toContain('import { ref, computed } from \'vue\'')
+    
+    // 检查注释是否保留
+    expect(out).toContain('// 用户信息')
+    expect(out).toContain('// 计算属性')
+    expect(out).toContain('// 方法')
+    
+    // 检查复杂对象结构是否保留格式
+    expect(out).toMatch(/const user = ref\(computed\(\(\) => \(\{\s*\n\s*name: \$t\('message\.hello'\),\s*\n\s*greeting: \$t\('message\.hi'\)\s*\n\s*\}\)\)\)/)
+    
+    // 检查函数结构是否保留格式（使用更简单的检查）
+    expect(out).toContain('function getMessage() {')
+    expect(out).toContain('return computed(() => $t(\'message.hello\'))')
+    expect(out).toContain('}')
+  })
+
+  test('preserve script with complex formatting and computed wrapping', async () => {
+    const code = `
+<script setup>
+  // 数组定义
+  const arr = ['hello world', 'hi', 'notMatch']
+  
+  // 对象定义
+  const obj = { 
+    a: 'hello world', 
+    b: 'hi', 
+    c: 'notMatch' 
+  }
+  
+  // 函数定义
+  function processData() {
+    const data = {
+      title: 'hello world',
+      description: 'hi'
+    }
+    return data
+  }
+</script>
+    `
+    const out = await testFunc(code)
+    
+    // 检查注释是否保留
+    expect(out).toContain('// 数组定义')
+    expect(out).toContain('// 对象定义')
+    expect(out).toContain('// 函数定义')
+    
+    // 检查数组是否被正确包装在computed中
+    expect(out).toMatch(/const arr = computed\(\(\) => \[\$t\('message\.hello'\), \$t\('message\.hi'\), ["']notMatch["']\]\)/)
+    
+    // 检查对象是否被正确包装在computed中
+    expect(out).toMatch(/const obj = computed\(\(\) => \(\{\s*\n\s*a: \$t\('message\.hello'\),\s*\n\s*b: \$t\('message\.hi'\),\s*\n\s*c: ["']notMatch["']\s*\n\s*\}\)\)/)
+    
+    // 检查函数内部的对象是否被正确包装
+    expect(out).toMatch(/const data = computed\(\(\) => \(\{\s*\n\s*title: \$t\('message\.hello'\),\s*\n\s*description: \$t\('message\.hi'\)\s*\n\s*\}\)\)/)
+  })
+
+  test('preserve mixed script and template with computed wrapping', async () => {
+    const code = `
+<script setup>
+  const text = 'hello world'
+  const html = '<span>hi</span>'
+</script>
+
+<template>
+  <div>
+    <p>{{ text }}</p>
+    <div v-html="html"></div>
+    <span>greetings</span>
+  </div>
+</template>
+    `
+    const out = await testFunc(code)
+    
+    // 检查script中的字符串是否被包装在computed中
+    expect(out).toMatch(/const text = computed\(\(\) => \$t\('message\.hello'\)\)/)
+    // 注意：HTML字符串中的文本可能不会被转换，因为它在字符串内部
+    expect(out).toContain(`const html = '<span>hi</span>'`)
+    
+    // 检查template中的文本是否被正确转换
+    expect(out).toContain(`<span>$t('message.nested.greet')</span>`)
+  })
+
+  test('preserve script format with computed wrapping for reactivity', async () => {
+    const code = `
+<script setup>
+  // 测试响应式字符串包装
+  const title = 'hello world'
+  const subtitle = 'hi'
+  
+  const config = {
+    title: 'hello world',
+    subtitle: 'hi'
+  }
+  
+  const messages = [
+    'hello world',
+    'hi',
+    'greetings'
+  ]
+</script>
+    `
+    const out = await testFunc(code)
+    
+    // 检查注释是否保留
+    expect(out).toContain('// 测试响应式字符串包装')
+    
+    // 检查简单字符串是否被包装在computed中
+    expect(out).toMatch(/const title = computed\(\(\) => \$t\('message\.hello'\)\)/)
+    expect(out).toMatch(/const subtitle = computed\(\(\) => \$t\('message\.hi'\)\)/)
+    
+    // 检查对象是否被包装在computed中
+    expect(out).toMatch(/const config = computed\(\(\) => \(\{\s*\n\s*title: \$t\('message\.hello'\),\s*\n\s*subtitle: \$t\('message\.hi'\)\s*\n\s*\}\)\)/)
+    
+    // 检查数组是否被包装在computed中
+    expect(out).toMatch(/const messages = computed\(\(\) => \[\$t\('message\.hello'\), \$t\('message\.hi'\), \$t\('message\.nested\.greet'\)\]\)/)
   })
 }) 

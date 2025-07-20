@@ -50,6 +50,7 @@
     "release": "bumpp --commit --push --tag && pnpm publish",
     "esno": "esno src/index.ts",
     "test": "vitest",
+    "test:once": "vitest run",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
@@ -74,7 +75,8 @@
   "dependencies": {
     "@babel/core": "^7.17.10",
     "@vue/compiler-dom": "^3.5.17",
-    "@vue/compiler-sfc": "^3.2.33"
+    "@vue/compiler-sfc": "^3.2.33",
+    "recast": "^0.23.11"
   },
   "peerDependencies": {
     "vue-i18n": "^11"

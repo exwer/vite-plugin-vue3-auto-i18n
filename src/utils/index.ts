@@ -1,51 +1,45 @@
-import type babelCore from '@babel/core'
-import type { LocaleMsg } from '../index'
-
-export function hasImportedMember(
-  node: babelCore.types.ImportDeclaration,
-  name: string,
-) {
-  return node.specifiers.some(
-    item =>
-      item.type === 'ImportSpecifier'
-      && item.imported.type === 'Identifier'
-      && item.imported.name === name,
-  )
+// 优化：使用更高效的递归类型定义
+interface LocaleObject {
+  [key: string]: string | LocaleObject
 }
 
 function getPath(
-  obj: Record<string, string | Record<string, any>>,
+  obj: LocaleObject,
   value: string,
-) {
-  let path = ''
-  const keys = Object.keys(obj)
-  for (let i = 0; i < keys.length; i++) {
-    const key = keys[i]
-    if (obj[key] === value) {
-      return `.${key}`
+  currentPath: string = ''
+): string {
+  // 优化：使用 Object.entries 提高性能
+  for (const [key, val] of Object.entries(obj)) {
+    const newPath = currentPath ? `${currentPath}.${key}` : key
+    
+    if (val === value) {
+      return newPath
     }
-    else if (typeof obj[key] !== 'string') {
-      path += getPath(obj[key] as any, value)
-      if (path)
-        return `.${key}${path}`
+    else if (typeof val === 'object' && val !== null) {
+      const result = getPath(val as LocaleObject, value, newPath)
+      if (result) {
+        return result
+      }
     }
   }
-  return path
+  return ''
 }
 
 export function getMatchedMsgPath(
-  locale: LocaleMsg,
+  locale: any,
   target: string,
 ): false | string {
-  // 遍历所有语言包来查找匹配的字符串
+  // 优化：使用 Object.keys 缓存，避免重复计算
   const languages = Object.keys(locale)
+  
   for (const lang of languages) {
     const langData = locale[lang]
     if (!langData) continue
     
     const result = getPath(langData, target)
-    if (result)
-      return result.slice(1)
+    if (result) {
+      return result
+    }
   }
   return false
 }

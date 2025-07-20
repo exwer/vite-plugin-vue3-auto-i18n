@@ -142,4 +142,12 @@ pnpm exec vitest run
 
 ---
 
+## ⚠️ 注意事项
+
+- 工具会自动为用到 computed 的脚本插入 `import { computed } from 'vue'`，无需手动引入。
+- 但请确保你的脚本中已手动引入 `useI18n` 并正确初始化 $t，否则 $t 可能不可用。
+- 数组/对象字面量中的国际化字符串也已自动用 computed 包裹，支持响应式国际化切换。
+
+---
+
 如有更多问题或建议，欢迎在 [GitHub Issues](https://github.com/exwer/i18ncraft/issues) 反馈！

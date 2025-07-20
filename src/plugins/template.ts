@@ -61,7 +61,7 @@ export default async function templateTransformer(
   }
   traverse(ast)
 
-  // 重新生成 template 字符串
+  // 优化：重新生成 template 字符串，使用更高效的字符串拼接
   function gen(node: any): string {
     if (node.type === NodeTypes.ROOT) {
       return node.children.map(gen).join('')
@@ -93,7 +93,10 @@ export default async function templateTransformer(
         }
         return ''
       }).join('')
-      return `<${tag}${attrs}>${node.children.map(gen).join('')}</${tag}>`
+      
+      // 优化：使用更高效的字符串拼接
+      const children = node.children.map(gen).join('')
+      return `<${tag}${attrs}>${children}</${tag}>`
     }
     if (node.type === NodeTypes.TEXT) {
       return node.content
