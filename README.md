@@ -85,6 +85,8 @@ module.exports = {
 npx i18ncraft
 ```
 
+#### Vue SFC Example
+
 **Before transformation:**
 ```vue
 <script setup>
@@ -112,6 +114,62 @@ const errorMessages = {
     </form>
   </div>
 </template>
+```
+
+#### React JSX Example
+
+**Before transformation:**
+```jsx
+import React from 'react'
+
+function App() {
+  const [title, setTitle] = useState('Hello World')
+  
+  return (
+    <div className="app">
+      <h1>{title}</h1>
+      <p>Welcome to our application</p>
+      
+      <form>
+        <input placeholder="Enter your name" />
+        <div className="error">This field is required</div>
+        
+        <div className="buttons">
+          <button>Submit</button>
+          <button>Cancel</button>
+        </div>
+      </form>
+    </div>
+  )
+}
+```
+
+**After transformation:**
+```jsx
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+
+function App() {
+  const { t } = useTranslation()
+  const [title, setTitle] = useState(t('message.hello'))
+  
+  return (
+    <div className="app">
+      <h1>{title}</h1>
+      <p>{t('message.welcome')}</p>
+      
+      <form>
+        <input placeholder={t('message.placeholder.name')} />
+        <div className="error">{t('message.errors.required')}</div>
+        
+        <div className="buttons">
+          <button>{t('message.buttons.submit')}</button>
+          <button>{t('message.buttons.cancel')}</button>
+        </div>
+      </form>
+    </div>
+  )
+}
 ```
 
 **After transformation:**
@@ -151,11 +209,13 @@ const errorMessages = computed(() => ({
 ## ✨ Core Features
 
 - **Vue SFC Support**: Transform `<template>` and `<script setup>` sections
+- **React JSX Support**: Transform JSX text nodes, attributes, hooks, and expressions
+- **Plugin System**: Support for unplugin, Vite, and Webpack plugins
 - **Batch Processing**: Recursive directory scanning with preserved structure
 - **Smart Matching**: Automatic i18n key generation with nested object support
 - **Type Safety**: Complete TypeScript support
 - **Error Handling**: Detailed error messages and recovery suggestions
-- **Test Coverage**: 45+ test cases ensuring reliability
+- **Test Coverage**: 74+ test cases ensuring reliability
 
 ## 📦 Installation
 
@@ -218,6 +278,76 @@ npx i18ncraft --dry-run
 npx i18ncraft --verbose
 ```
 
+### Plugin System
+
+#### Unplugin
+
+```js
+// vite.config.js or webpack.config.js
+import { createUnplugin } from 'i18ncraft/plugins'
+
+export default {
+  plugins: [
+    createUnplugin({
+      locale: {
+        en: {
+          message: {
+            hello: 'Hello World',
+            welcome: 'Welcome'
+          }
+        }
+      },
+      include: ['**/*.{vue,js,jsx,ts,tsx}'],
+      exclude: ['**/node_modules/**']
+    })
+  ]
+}
+```
+
+#### Vite Plugin
+
+```js
+// vite.config.js
+import { createVitePlugin } from 'i18ncraft/plugins'
+
+export default {
+  plugins: [
+    createVitePlugin({
+      locale: {
+        en: {
+          message: {
+            hello: 'Hello World',
+            welcome: 'Welcome'
+          }
+        }
+      }
+    })
+  ]
+}
+```
+
+#### Webpack Plugin
+
+```js
+// webpack.config.js
+import { createWebpackPlugin } from 'i18ncraft/plugins'
+
+export default {
+  plugins: [
+    createWebpackPlugin({
+      locale: {
+        en: {
+          message: {
+            hello: 'Hello World',
+            welcome: 'Welcome'
+          }
+        }
+      }
+    })
+  ]
+}
+```
+
 ## ⚙️ Configuration
 
 | Option | Type | Required | Default | Description |
@@ -233,26 +363,27 @@ npx i18ncraft --verbose
 
 - [x] Vue SFC template transformation
 - [x] Vue SFC script transformation
+- [x] React JSX transformation
 - [x] Batch file processing
 - [x] Directory structure preservation
 - [x] Basic error handling
 - [x] TypeScript support
 - [x] CLI tool
 - [x] Configuration file support
-- [x] Test coverage (45+ tests)
+- [x] Test coverage (74+ tests)
 - [x] vue-i18n format support
+- [x] react-i18next format support
+- [x] Unplugin support
+- [x] Vite plugin
+- [x] Webpack plugin
 
 ### 🚧 In Development
 
-- [ ] React JSX transformation
 - [ ] Angular template transformation
 - [ ] Svelte component transformation
 - [ ] i18next format support
-- [ ] react-i18next format support
 - [ ] svelte-i18n format support
 - [ ] Custom transformation plugins
-- [ ] Webpack plugin
-- [ ] Vite plugin
 - [ ] Rollup plugin
 - [ ] ESLint plugin
 - [ ] VS Code extension

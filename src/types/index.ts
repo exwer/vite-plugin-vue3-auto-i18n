@@ -43,6 +43,28 @@ export interface CLIConfig {
 // 匹配结果类型
 export type MatchResult = string | false
 
+// 文本匹配类型
+export interface TextMatch {
+  original: string
+  key: string
+  type: string
+  line?: number
+  column?: number
+}
+
+// 转换结果类型
+export interface TransformResult {
+  code: string
+  matches: TextMatch[]
+  errors: Error[]
+}
+
+// 插件选项类型
+export interface PluginOptions {
+  locale: LocaleConfig
+  transformFormat?: TransformFormat
+}
+
 // 文件处理结果类型
 export interface FileProcessResult {
   success: boolean
