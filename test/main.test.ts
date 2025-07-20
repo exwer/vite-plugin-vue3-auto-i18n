@@ -443,3 +443,90 @@ describe('code format preservation', () => {
     expect(out).toMatch(/const messages = computed\(\(\) => \[\$t\('message\.hello'\), \$t\('message\.hi'\), \$t\('message\.nested\.greet'\)\]\)/)
   })
 }) 
+
+  test('preserve template formatting and comments', async () => {
+    const code = `
+<template>
+  <!-- 这是一个注释 -->
+  <div class="container">
+    <h1>hello world</h1>
+    
+    <p>hi</p>
+    
+    <!-- 另一个注释 -->
+    <span>greetings</span>
+  </div>
+</template>
+    `
+    const out = await testFunc(code)
+    
+    // 检查注释是否保留
+    expect(out).toContain('<!-- 这是一个注释 -->')
+    expect(out).toContain('<!-- 另一个注释 -->')
+    
+    // 检查转换后的内容
+    expect(out).toContain(`<h1>$t('message.hello')</h1>`)
+    expect(out).toContain(`<p>$t('message.hi')</p>`)
+    expect(out).toContain(`<span>$t('message.nested.greet')</span>`)
+    
+    // 检查格式是否保留（缩进和空行）
+    expect(out).toMatch(/<div class="container">\s*\n\s*<h1>\$t\('message\.hello'\)<\/h1>/)
+    expect(out).toMatch(/<h1>.*\n\s*\n\s*<p>/)
+    expect(out).toMatch(/<p>.*\n\s*\n\s*<!-- 另一个注释 -->/)
+  })
+
+  test('preserve complex template formatting', async () => {
+    const code = `
+<template>
+  <!-- 复杂的模板格式测试 -->
+  <div class="container">
+    <header>
+      <h1>hello world</h1>
+      <nav>
+        <a href="#" title="hi">Link</a>
+      </nav>
+    </header>
+    
+    <main>
+      <section>
+        <h2>greetings</h2>
+        <p>hello world</p>
+        <ul>
+          <li>hi</li>
+          <li>greetings</li>
+        </ul>
+      </section>
+      
+      <aside>
+        <div :title="'hello world'">
+          <span>{{ 'hi' }}</span>
+        </div>
+      </aside>
+    </main>
+    
+    <footer>
+      <p>greetings</p>
+    </footer>
+  </div>
+</template>
+    `
+    const out = await testFunc(code)
+    console.log(code)
+    
+    // 检查注释是否保留
+    expect(out).toContain('<!-- 复杂的模板格式测试 -->')
+    
+    // 检查转换后的内容（只检查确定会被替换的）
+    expect(out).toContain(`<h1>$t('message.hello')</h1>`)
+    expect(out).toContain(`<h2>$t('message.nested.greet')</h2>`)
+    expect(out).toContain(`:title="$t('message.hello')"`)
+    expect(out).toContain(`{{ $t('message.hi') }}`)
+    
+    // 检查格式是否保留（缩进和空行）
+    expect(out).toMatch(/<div class="container">\s*\n\s*<header>/)
+    expect(out).toMatch(/<header>\s*\n\s*<h1>/)
+    expect(out).toMatch(/<main>\s*\n\s*<section>/)
+    expect(out).toMatch(/<section>\s*\n\s*<h2>/)
+    expect(out).toMatch(/<aside>\s*\n\s*<div/)
+    expect(out).toMatch(/<footer>\s*\n\s*<p>/)
+  })
