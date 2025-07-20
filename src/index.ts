@@ -1,2 +1,2 @@
-export type { TransformOptions } from './core/transform'
+export type { TransformOptions, TransformFormat } from './core/transform'
 export { transformSFC } from './core/transform'
