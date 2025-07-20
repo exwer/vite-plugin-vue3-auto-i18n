@@ -1,8 +1,19 @@
 {
-  "name": "i18nCraft",
+  "name": "i18ncraft",
   "version": "0.0.1",
   "packageManager": "pnpm@10.13.1",
   "description": "🚀 i18nCraft - The modern CLI toolkit for batch internationalization (i18n) refactoring and automation. Effortlessly scan, transform, and manage i18n keys in Vue and beyond.",
+  "author": "exwer",
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/exwer",
+  "homepage": "https://github.com/exwer/i18ncraft#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/exwer/i18nCraft.git"
+  },
+  "bugs": {
+    "url": "https://github.com/exwer/i18ncraft/issues"
+  },
   "keywords": [
     "vue3",
     "react",
@@ -12,27 +23,17 @@
     "vue-i18n",
     "react-i18n"
   ],
-  "homepage": "https://github.com/exwer/i18ncraft#readme",
-  "bugs": {
-    "url": "https://github.com/exwer/i18ncraft/issues"
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
   },
-  "license": "MIT",
-  "author": "exwer",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/exwer/i18nCraft.git"
-  },
-  "funding": "https://github.com/sponsors/exwer",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "require": "./dist/index.cjs",
-      "import": "./dist/index.mjs",
-      "types": "./dist/index.d.ts"
-    }
-  },
   "typesVersions": {
     "*": {
       "*": [
@@ -41,10 +42,12 @@
       ]
     }
   },
+  "bin": {
+    "i18ncraft": "./dist/auto-i18n.cjs"
+  },
   "files": [
     "dist"
   ],
-  "sideEffects": false,
   "scripts": {
     "lint": "eslint .",
     "release": "bumpp --commit --push --tag && pnpm publish",
@@ -52,6 +55,12 @@
     "test": "vitest",
     "test:once": "vitest run",
     "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@babel/core": "^7.17.10",
+    "@vue/compiler-dom": "^3.5.17",
+    "@vue/compiler-sfc": "^3.2.33",
+    "recast": "^0.23.11"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.17.0",
@@ -71,14 +80,5 @@
     "vitest": "^3.2.4",
     "vue": "^3.2.33",
     "vue-i18n": "^11.1.10"
-  },
-  "dependencies": {
-    "@babel/core": "^7.17.10",
-    "@vue/compiler-dom": "^3.5.17",
-    "@vue/compiler-sfc": "^3.2.33",
-    "recast": "^0.23.11"
-  },
-  "peerDependencies": {
-    "vue-i18n": "^11"
   }
 }
