@@ -1,6 +1,6 @@
 {
   "name": "i18ncraft",
-  "version": "0.1.0-beta.1",
+  "version": "0.1.0-beta.2",
   "packageManager": "pnpm@10.13.1",
   "description": "🚀 i18nCraft - The modern CLI toolkit for batch internationalization (i18n) refactoring and automation. Effortlessly scan, transform, and manage i18n keys in Vue and beyond.",
   "author": "exwer",
