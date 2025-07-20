@@ -43,6 +43,43 @@ function validateConfig(config: any) {
   if (!config.outDir || typeof config.outDir !== 'string') {
     throw new Error('i18ncraft: config.outDir is required and must be a string')
   }
+  
+  // 验证 locale 配置
+  if (!config.locale || typeof config.locale !== 'object' || Array.isArray(config.locale)) {
+    throw new Error('i18ncraft: config.locale is required and must be an object with language keys')
+  }
+  
+  // 验证 locale 结构
+  const localeKeys = Object.keys(config.locale)
+  if (localeKeys.length === 0) {
+    throw new Error('i18ncraft: config.locale must contain at least one language')
+  }
+  
+  // 验证每个语言的数据是对象
+  for (const lang of localeKeys) {
+    if (!config.locale[lang] || typeof config.locale[lang] !== 'object') {
+      throw new Error(`i18ncraft: config.locale.${lang} must be an object`)
+    }
+  }
+  
+  // 验证 transformFormat（如果提供）
+  if (config.transformFormat) {
+    if (typeof config.transformFormat !== 'object') {
+      throw new Error('i18ncraft: config.transformFormat must be an object')
+    }
+    
+    const requiredKeys = ['template', 'script', 'interpolation']
+    for (const key of requiredKeys) {
+      if (!config.transformFormat[key]) {
+        throw new Error(`i18ncraft: config.transformFormat.${key} is required`)
+      }
+      
+      const format = config.transformFormat[key]
+      if (typeof format !== 'string' && typeof format !== 'function') {
+        throw new Error(`i18ncraft: config.transformFormat.${key} must be a string or function`)
+      }
+    }
+  }
 }
 
 // 递归扫描目录下所有 .vue 文件
@@ -99,7 +136,6 @@ function main() {
     process.exit(1)
   }
   console.log('i18ncraft: Loaded config:', config)
-  // TODO: 调用核心转换逻辑
   batchTransformVueFiles(config)
 }
 
