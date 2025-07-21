@@ -20,13 +20,15 @@
 
 ## 📋 Table of Contents
 
-- [Quick Start](#quick-start)
-- [Core Features](#core-features)
-- [Installation](#installation)
-- [Usage](#usage)
-- [Configuration](#configuration)
-- [TODO List](#todo-list)
-- [Contributing](#contributing)
+- [Quick Start](#-quick-start)
+- [Core Features](#-core-features)
+- [Installation](#-installation)
+- [Usage](#-usage)
+- [Configuration](#-configuration)
+- [Architecture](#-architecture)
+- [API Reference](#-api-reference)
+- [TODO List](#-todo-list)
+- [Contributing](#-contributing)
 
 ## 🚀 Quick Start
 
@@ -116,6 +118,40 @@ const errorMessages = {
 </template>
 ```
 
+**After transformation:**
+```vue
+<script setup>
+import { computed } from 'vue'
+
+const pageTitle = computed(() => $t('message.hello'))
+const buttonLabels = [
+  computed(() => $t('message.buttons.submit')),
+  computed(() => $t('message.buttons.cancel'))
+]
+const errorMessages = computed(() => ({
+  required: $t('message.errors.required'),
+  invalid: $t('message.errors.invalid')
+}))
+</script>
+
+<template>
+  <div class="app">
+    <h1>{{ pageTitle }}</h1>
+    <p>{{ $t('message.welcome') }}</p>
+    
+    <form>
+      <input :placeholder="$t('message.placeholder.name')" />
+      <div class="error">{{ errorMessages.required }}</div>
+      
+      <div class="buttons">
+        <button>{{ buttonLabels[0] }}</button>
+        <button>{{ buttonLabels[1] }}</button>
+      </div>
+    </form>
+  </div>
+</template>
+```
+
 #### React JSX Example
 
 **Before transformation:**
@@ -172,40 +208,6 @@ function App() {
 }
 ```
 
-**After transformation:**
-```vue
-<script setup>
-import { computed } from 'vue'
-
-const pageTitle = computed(() => $t('message.hello'))
-const buttonLabels = [
-  computed(() => $t('message.buttons.submit')),
-  computed(() => $t('message.buttons.cancel'))
-]
-const errorMessages = computed(() => ({
-  required: $t('message.errors.required'),
-  invalid: $t('message.errors.invalid')
-}))
-</script>
-
-<template>
-  <div class="app">
-    <h1>{{ pageTitle }}</h1>
-    <p>{{ $t('message.welcome') }}</p>
-    
-    <form>
-      <input :placeholder="$t('message.placeholder.name')" />
-      <div class="error">{{ errorMessages.required }}</div>
-      
-      <div class="buttons">
-        <button>{{ buttonLabels[0] }}</button>
-        <button>{{ buttonLabels[1] }}</button>
-      </div>
-    </form>
-  </div>
-</template>
-```
-
 ## ✨ Core Features
 
 - **Vue SFC Support**: Transform `<template>` and `<script setup>` sections
@@ -216,6 +218,9 @@ const errorMessages = computed(() => ({
 - **Type Safety**: Complete TypeScript support
 - **Error Handling**: Detailed error messages and recovery suggestions
 - **Test Coverage**: 74+ test cases ensuring reliability
+- **Middleware System**: Extensible middleware for preprocessing and postprocessing
+- **Performance Optimization**: Caching mechanisms and optimized processing
+- **Modern Architecture**: Modular design with clear separation of concerns
 
 ## 📦 Installation
 
@@ -276,6 +281,55 @@ npx i18ncraft --dry-run
 
 # Verbose logging
 npx i18ncraft --verbose
+```
+
+### Programmatic Usage
+
+#### Using the new CLI class
+
+```typescript
+import { I18nCraftCLI } from 'i18ncraft'
+
+const cli = new I18nCraftCLI({
+  scanDir: 'src',
+  outDir: 'i18n_out',
+  exts: ['.vue', '.jsx'],
+  locale: {
+    en: {
+      message: {
+        hello: 'Hello World',
+        welcome: 'Welcome'
+      }
+    }
+  }
+})
+
+const stats = await cli.batchTransform()
+console.log(`Processed ${stats.totalFiles} files`)
+```
+
+#### Using middleware system
+
+```typescript
+import { useMiddleware, performanceMiddleware, loggingMiddleware } from 'i18ncraft'
+
+// Register built-in middlewares
+useMiddleware(performanceMiddleware)
+useMiddleware(loggingMiddleware)
+
+// Custom middleware
+useMiddleware({
+  name: 'custom',
+  priority: 5,
+  before: (source, options) => {
+    // Preprocessing logic
+    return source
+  },
+  after: (result, options) => {
+    // Postprocessing logic
+    return result
+  }
+})
 ```
 
 ### Plugin System
@@ -356,6 +410,78 @@ export default {
 | `outDir` | `string` | ✅ | - | Output directory path |
 | `exts` | `string[]` | ✅ | `['.vue']` | File extensions |
 | `locale` | `object` | ✅ | - | Locale configuration |
+| `enableScript` | `boolean` | ❌ | `true` | Enable script transformation |
+| `enableTemplate` | `boolean` | ❌ | `true` | Enable template transformation |
+| `debug` | `boolean` | ❌ | `false` | Enable debug logging |
+| `customMatcher` | `function` | ❌ | - | Custom text matching function |
+| `keyGenerator` | `function` | ❌ | - | Custom key generation function |
+| `transformFormat` | `object` | ❌ | - | Custom transformation format |
+
+## 🏗️ Architecture
+
+i18ncraft features a modern, modular architecture designed for extensibility and maintainability:
+
+### Core Components
+
+- **Transformer Architecture**: Abstract base classes for different file types
+- **Middleware System**: Extensible preprocessing and postprocessing hooks
+- **Configuration Management**: Type-safe configuration with validation
+- **CLI Tools**: Modern CLI class with batch processing capabilities
+
+### Built-in Middlewares
+
+- **Performance Monitoring**: Track transformation performance
+- **Logging**: Comprehensive logging and debugging
+- **Error Handling**: Graceful error handling and recovery
+- **Statistics**: Detailed transformation statistics
+- **Caching**: Smart caching for improved performance
+
+For detailed architecture information, see [ARCHITECTURE.md](./ARCHITECTURE.md).
+
+## 📚 API Reference
+
+### Core Functions
+
+```typescript
+// Transform Vue SFC
+import { transformSFC } from 'i18ncraft'
+const result = await transformSFC(sourceCode, options)
+
+// Create transformer
+import { createTransformer } from 'i18ncraft'
+const transformer = createTransformer(sourceCode, options)
+const result = await transformer.transform()
+
+// Use middleware
+import { useMiddleware, performanceMiddleware } from 'i18ncraft'
+useMiddleware(performanceMiddleware)
+```
+
+### Configuration Management
+
+```typescript
+import { ConfigManager } from 'i18ncraft'
+
+const configManager = new ConfigManager({
+  scanDir: 'src',
+  outDir: 'i18n_out',
+  exts: ['.vue'],
+  locale: { /* locale config */ }
+})
+
+const validation = configManager.validate()
+const config = configManager.getValidConfig()
+```
+
+### CLI Tools
+
+```typescript
+import { I18nCraftCLI } from 'i18ncraft'
+
+const cli = new I18nCraftCLI(config)
+await cli.init()
+const stats = await cli.batchTransform()
+```
 
 ## 📋 TODO List
 
@@ -376,6 +502,11 @@ export default {
 - [x] Unplugin support
 - [x] Vite plugin
 - [x] Webpack plugin
+- [x] **Middleware system**
+- [x] **Performance optimization**
+- [x] **Modern architecture**
+- [x] **Caching mechanisms**
+- [x] **Configuration management**
 
 ### 🚧 In Development
 
@@ -424,6 +555,13 @@ pnpm typecheck
 - Test coverage
 - Documentation updates
 
+### Architecture Guidelines
+
+- Follow the modular architecture
+- Use the middleware system for extensions
+- Maintain backward compatibility
+- Write comprehensive tests
+
 ## 📄 License
 
 MIT License - see [LICENSE](LICENSE) file for details
@@ -433,6 +571,8 @@ MIT License - see [LICENSE](LICENSE) file for details
 - [GitHub Repository](https://github.com/exwer/i18ncraft)
 - [NPM Package](https://www.npmjs.com/package/i18ncraft)
 - [Issues](https://github.com/exwer/i18ncraft/issues)
+- [Architecture Documentation](./ARCHITECTURE.md)
+- [Refactor Summary](./REFACTOR_SUMMARY.md)
 
 ---
 

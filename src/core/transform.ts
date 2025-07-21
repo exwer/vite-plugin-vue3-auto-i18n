@@ -1,8 +1,6 @@
 import { parse } from '@vue/compiler-sfc'
 import templateTransformer from '../plugins/template'
 import { transformScript } from '../plugins/script'
-import { getMatchedMsgPath } from '../utils'
-import { formatKey } from '../utils'
 import { createError, ErrorCode } from '../utils/errors'
 import type { 
   TransformOptions, 
@@ -18,6 +16,61 @@ export const DEFAULT_TRANSFORM_FORMAT: TransformFormat = {
   interpolation: (key: string) => `$t('${key}')`
 }
 
+// 缓存匹配结果
+const matchCache = new Map<string, Map<string, string | false>>()
+
+function getCachedMatch(locale: any, text: string): string | false {
+  const localeKey = JSON.stringify(locale)
+  
+  if (!matchCache.has(localeKey)) {
+    matchCache.set(localeKey, new Map())
+  }
+  
+  const cache = matchCache.get(localeKey)!
+  
+  if (cache.has(text)) {
+    return cache.get(text) || false
+  }
+  
+  const result = searchInLocale(locale, text)
+  cache.set(text, result || false)
+  return result
+}
+
+// 在locale中搜索文本
+function searchInLocale(locale: any, text: string): string | false {
+  const languages = Object.keys(locale)
+  
+  for (const lang of languages) {
+    const langData = locale[lang]
+    if (!langData) continue
+    
+    const result = searchInObject(langData, text)
+    if (result) {
+      return result
+    }
+  }
+  return false
+}
+
+// 递归搜索对象
+function searchInObject(obj: any, value: string, currentPath: string = ''): string | false {
+  for (const [key, val] of Object.entries(obj)) {
+    const newPath = currentPath ? `${currentPath}.${key}` : key
+    
+    if (val === value) {
+      return newPath
+    }
+    else if (typeof val === 'object' && val !== null) {
+      const result = searchInObject(val, value, newPath)
+      if (result) {
+        return result
+      }
+    }
+  }
+  return false
+}
+
 // 匹配或生成键的辅助函数
 export function matchOrGenerateKey(
   locale: LocaleConfig,
@@ -29,8 +82,11 @@ export function matchOrGenerateKey(
     const res = customMatcher(text)
     if (res) return res
   }
-  const matched = getMatchedMsgPath(locale, text)
+  
+  // 使用缓存匹配器
+  const matched = getCachedMatch(locale, text)
   if (matched) return matched
+  
   if (keyGenerator) return keyGenerator(text)
   return false
 }
