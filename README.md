@@ -33,6 +33,45 @@ yarn add i18ncraft
 
 #### Vue.js Projects
 
+**Before transformation:**
+```vue
+<template>
+  <div class="app">
+    <h1>Hello World</h1>
+    <p>Welcome to our app</p>
+    <input placeholder="Enter your name" />
+    <button :title="'Click to submit'">Submit</button>
+    <div v-text="'Loading...'"></div>
+    <my-component :config="{ text: 'Save', label: 'Cancel' }" />
+  </div>
+</template>
+
+<script setup>
+const message = 'Hello World'
+const buttonText = 'Click me'
+</script>
+```
+
+**After transformation:**
+```vue
+<template>
+  <div class="app">
+    <h1>{{ $t('message.hello') }}</h1>
+    <p>{{ $t('message.welcome') }}</p>
+    <input :placeholder="$t('message.placeholder')" />
+    <button :title="$t('message.submit')">{{ $t('message.submit') }}</button>
+    <div v-text="$t('message.loading')"></div>
+    <my-component :config="{ text: $t('message.save'), label: $t('message.cancel') }" />
+  </div>
+</template>
+
+<script setup>
+const message = $t('message.hello')
+const buttonText = $t('message.clickMe')
+</script>
+```
+
+**Programmatic usage:**
 ```typescript
 import { VueTransformer } from 'i18ncraft'
 
@@ -41,7 +80,13 @@ const transformer = new VueTransformer(sourceCode, {
     en: {
       message: {
         hello: 'Hello World',
-        welcome: 'Welcome to our app'
+        welcome: 'Welcome to our app',
+        placeholder: 'Enter your name',
+        submit: 'Click to submit',
+        loading: 'Loading...',
+        save: 'Save',
+        cancel: 'Cancel',
+        clickMe: 'Click me'
       }
     }
   }
@@ -54,6 +99,47 @@ console.log(result.matches) // Found translations
 
 #### React Projects
 
+**Before transformation:**
+```jsx
+import React from 'react'
+
+function App() {
+  const [title] = useState('Hello World')
+  
+  return (
+    <div className="app">
+      <h1>{title}</h1>
+      <p>Welcome to our app</p>
+      <input placeholder="Enter your name" />
+      <button>Submit</button>
+      <div>Loading...</div>
+    </div>
+  )
+}
+```
+
+**After transformation:**
+```jsx
+import React from 'react'
+import { useTranslation } from 'react-i18next'
+
+function App() {
+  const { t } = useTranslation()
+  const [title] = useState(t('message.hello'))
+  
+  return (
+    <div className="app">
+      <h1>{title}</h1>
+      <p>{t('message.welcome')}</p>
+      <input placeholder={t('message.placeholder')} />
+      <button>{t('message.submit')}</button>
+      <div>{t('message.loading')}</div>
+    </div>
+  )
+}
+```
+
+**Programmatic usage:**
 ```typescript
 import { ReactTransformer } from 'i18ncraft'
 
@@ -62,7 +148,10 @@ const transformer = new ReactTransformer(sourceCode, {
     en: {
       message: {
         hello: 'Hello World',
-        welcome: 'Welcome to our app'
+        welcome: 'Welcome to our app',
+        placeholder: 'Enter your name',
+        submit: 'Submit',
+        loading: 'Loading...'
       }
     }
   }
@@ -73,6 +162,33 @@ const result = await transformer.transform()
 
 #### Vanilla JavaScript
 
+**Before transformation:**
+```javascript
+const messages = {
+  greeting: 'Hello World',
+  farewell: 'Goodbye'
+}
+
+function showMessage() {
+  alert('Welcome to our app')
+  console.log('Debug: User logged in')
+}
+```
+
+**After transformation:**
+```javascript
+const messages = {
+  greeting: translate('message.hello'),
+  farewell: translate('message.goodbye')
+}
+
+function showMessage() {
+  alert(translate('message.welcome'))
+  console.log('Debug: User logged in')
+}
+```
+
+**Programmatic usage:**
 ```typescript
 import { JavaScriptTransformer } from 'i18ncraft'
 
@@ -80,7 +196,9 @@ const transformer = new JavaScriptTransformer(sourceCode, {
   locale: {
     en: {
       message: {
-        hello: 'Hello World'
+        hello: 'Hello World',
+        goodbye: 'Goodbye',
+        welcome: 'Welcome to our app'
       }
     }
   }
@@ -99,12 +217,32 @@ i18ncraft transform --input src --output dist --locale ./locales/en.json
 i18ncraft transform --config ./i18n.config.js
 ```
 
+**Example output:**
+```bash
+$ i18ncraft transform --input src --output dist
+
+✨ i18nCraft - Transforming your project...
+
+📁 Processing src/
+  ✅ components/Header.vue (3 matches found)
+  ✅ components/Button.vue (2 matches found) 
+  ✅ pages/Home.vue (8 matches found)
+  ✅ utils/messages.js (5 matches found)
+
+🎉 Transformation completed!
+  📊 Files processed: 4
+  🔍 Total matches: 18 translations found
+  ⚡ Time taken: 1.2s
+  📂 Output: dist/
+```
+
 ## 🎯 Vue Template Support
 
 i18nCraft provides comprehensive Vue template transformation support:
 
 ### ✅ Fully Supported Syntax
 
+**Input:**
 ```vue
 <template>
   <!-- Basic text interpolation -->
@@ -136,6 +274,42 @@ i18nCraft provides comprehensive Vue template transformation support:
   <!-- Slots -->
   <template #header>
     <h2>Page Title</h2>
+  </template>
+</template>
+```
+
+**Output:**
+```vue
+<template>
+  <!-- Basic text interpolation -->
+  <h1>{{ $t('message.hello') }}</h1>
+  
+  <!-- Static attributes -->
+  <input :placeholder="$t('message.placeholder')" />
+  
+  <!-- Dynamic attributes -->
+  <input :placeholder="$t('message.email')" />
+  <button :[dynamicAttr]="$t('message.submit')">Click</button>
+  
+  <!-- Vue directives -->
+  <p v-text="$t('message.hello')"></p>
+  <div v-html="$t('message.welcome')"></div>
+  
+  <!-- Component props with complex expressions -->
+  <my-component 
+    :config="{ text: $t('message.hello'), label: $t('message.submit') }"
+    :items="[$t('message.loading'), $t('message.success')]"
+  />
+  
+  <!-- Conditional rendering -->
+  <p v-if="show">{{ $t('message.welcome') }}</p>
+  
+  <!-- List rendering -->
+  <li v-for="item in items">{{ $t('message.item') }}</li>
+  
+  <!-- Slots -->
+  <template #header>
+    <h2>{{ $t('message.title') }}</h2>
   </template>
 </template>
 ```
