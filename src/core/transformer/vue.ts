@@ -1,8 +1,10 @@
 import { parse } from '@vue/compiler-sfc'
 import { BaseTransformer } from './base'
 import type { TransformOptions, TransformResult } from '../../types'
-import { createError, ErrorCode } from '../../utils/errors'
+import { createError, ErrorCode } from '../errors'
 import { formatKey } from '../../utils'
+import { VueTemplateTransformer } from '../transformers/vue-template'
+import { transformScript } from '../../plugins/script'
 
 export class VueTransformer extends BaseTransformer {
   private descriptor: any
@@ -72,16 +74,14 @@ export class VueTransformer extends BaseTransformer {
   }
 
   private async transformTemplate(template: any): Promise<string | null> {
-    const templateTransformer = require('../../plugins/template').default
-    return await templateTransformer(
-      template.content,
+    const transformer = new VueTemplateTransformer(
       (text: string) => this.isMatchedStr(text),
       this.transformFormat
     )
+    return await transformer.transform(template.content)
   }
 
   private async transformScript(scriptBlock: any): Promise<string | null> {
-    const { transformScript } = require('../../plugins/script')
     return await transformScript(
       scriptBlock.content,
       (text: string) => this.isMatchedStr(text),

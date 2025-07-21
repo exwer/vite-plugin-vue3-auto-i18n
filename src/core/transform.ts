@@ -1,7 +1,8 @@
 import { parse } from '@vue/compiler-sfc'
-import templateTransformer from '../plugins/template'
+import { VueTemplateTransformer } from './transformers/vue-template'
 import { transformScript } from '../plugins/script'
-import { createError, ErrorCode } from '../utils/errors'
+import { createError, ErrorCode } from './errors'
+import { matchOrGenerateKey } from './matcher'
 import type { 
   TransformOptions, 
   LocaleConfig, 
@@ -16,80 +17,8 @@ export const DEFAULT_TRANSFORM_FORMAT: TransformFormat = {
   interpolation: (key: string) => `$t('${key}')`
 }
 
-// 缓存匹配结果
-const matchCache = new Map<string, Map<string, string | false>>()
-
-function getCachedMatch(locale: any, text: string): string | false {
-  const localeKey = JSON.stringify(locale)
-  
-  if (!matchCache.has(localeKey)) {
-    matchCache.set(localeKey, new Map())
-  }
-  
-  const cache = matchCache.get(localeKey)!
-  
-  if (cache.has(text)) {
-    return cache.get(text) || false
-  }
-  
-  const result = searchInLocale(locale, text)
-  cache.set(text, result || false)
-  return result
-}
-
-// 在locale中搜索文本
-function searchInLocale(locale: any, text: string): string | false {
-  const languages = Object.keys(locale)
-  
-  for (const lang of languages) {
-    const langData = locale[lang]
-    if (!langData) continue
-    
-    const result = searchInObject(langData, text)
-    if (result) {
-      return result
-    }
-  }
-  return false
-}
-
-// 递归搜索对象
-function searchInObject(obj: any, value: string, currentPath: string = ''): string | false {
-  for (const [key, val] of Object.entries(obj)) {
-    const newPath = currentPath ? `${currentPath}.${key}` : key
-    
-    if (val === value) {
-      return newPath
-    }
-    else if (typeof val === 'object' && val !== null) {
-      const result = searchInObject(val, value, newPath)
-      if (result) {
-        return result
-      }
-    }
-  }
-  return false
-}
-
-// 匹配或生成键的辅助函数
-export function matchOrGenerateKey(
-  locale: LocaleConfig,
-  customMatcher: TransformOptions['customMatcher'],
-  keyGenerator: TransformOptions['keyGenerator'],
-  text: string
-) {
-  if (customMatcher) {
-    const res = customMatcher(text)
-    if (res) return res
-  }
-  
-  // 使用缓存匹配器
-  const matched = getCachedMatch(locale, text)
-  if (matched) return matched
-  
-  if (keyGenerator) return keyGenerator(text)
-  return false
-}
+// 重新导出匹配函数以保持向后兼容
+export { matchOrGenerateKey }
 
 export async function transformSFC(
   sourceCode: string,
@@ -133,7 +62,8 @@ export async function transformSFC(
   // 模板转换
   if (enableTemplate && template) {
     try {
-      const templateOut = await templateTransformer(template.content, isMatchedStr, transformFormat)
+      const templateTransformer = new VueTemplateTransformer(isMatchedStr, transformFormat)
+      const templateOut = await templateTransformer.transform(template.content)
       // 使用 descriptor 提供的位置信息
       const start = template.loc.start.offset
       const end = template.loc.end.offset
@@ -150,7 +80,7 @@ export async function transformSFC(
           { originalError: error }
         )
       }
-      throw error
+      throw error instanceof Error ? error : new Error(String(error))
     }
   }
   
@@ -175,7 +105,7 @@ export async function transformSFC(
           { originalError: error }
         )
       }
-      throw error
+      throw error instanceof Error ? error : new Error(String(error))
     }
   }
   
@@ -194,7 +124,7 @@ function parseSFC(sourceCode: string) {
     throw createError(
       ErrorCode.PARSE_ERROR,
       'Failed to parse Vue SFC',
-      { originalError: error }
+      { originalError: error instanceof Error ? error : new Error(String(error)) }
     )
   }
 } 

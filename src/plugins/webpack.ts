@@ -1,7 +1,7 @@
 import type { Compiler, Compilation } from 'webpack'
 import { transformSFC } from '../core/transform'
 import { transformReact } from './react'
-import { createError, ErrorCode } from '../utils/errors'
+import { createError, ErrorCode } from '../core/errors'
 import type { PluginOptions } from '../types'
 
 export interface WebpackPluginOptions extends PluginOptions {

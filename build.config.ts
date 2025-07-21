@@ -3,7 +3,6 @@ import { defineBuildConfig } from 'unbuild'
 export default defineBuildConfig({
   entries: [
     'src/index',
-    'bin/i18ncraft',
   ],
   declaration: true,
   clean: true,
@@ -14,6 +13,18 @@ export default defineBuildConfig({
       target: 'node16',
     },
   },
+  externals: [
+    'unplugin',
+    'vite',
+    'webpack',
+    'rollup',
+    '@babel/types',
+    '@babel/parser',
+    '@babel/traverse',
+    '@vue/compiler-sfc',
+    'recast',
+    'magic-string'
+  ],
   // 为CLI工具添加特殊配置
   hooks: {
     'build:done': (ctx) => {

@@ -1,7 +1,7 @@
 import { createUnplugin as createUnpluginBase } from 'unplugin'
 import { transformSFC } from '../core/transform'
 import { transformReact } from './react'
-import { createError, ErrorCode } from '../utils/errors'
+import { createError, ErrorCode } from '../core/errors'
 import type { LocaleConfig, TransformFormat, PluginOptions } from '../types'
 
 export interface UnpluginOptions extends PluginOptions {

@@ -1,11 +1,13 @@
 import type { TransformOptions, TransformResult, TextMatch } from '../../types'
-import { createError, ErrorCode } from '../../utils/errors'
+import { createError, ErrorCode } from '../errors'
+import { TextMatcher } from '../matcher'
 
 export interface TransformerContext {
   sourceCode: string
   options: TransformOptions
   matches: TextMatch[]
   errors: Error[]
+  matcher: TextMatcher
 }
 
 export abstract class BaseTransformer {
@@ -16,7 +18,11 @@ export abstract class BaseTransformer {
       sourceCode,
       options,
       matches: [],
-      errors: []
+      errors: [],
+      matcher: new TextMatcher(options.locale, {
+        customMatcher: options.customMatcher,
+        keyGenerator: options.keyGenerator
+      })
     }
   }
 
@@ -111,72 +117,6 @@ export abstract class BaseTransformer {
    * 检查文本是否匹配
    */
   protected isMatchedStr(text: string): string | false {
-    const { locale, customMatcher, keyGenerator } = this.context.options
-    
-    if (customMatcher) {
-      const res = customMatcher(text)
-      if (res) return res
-    }
-    
-    // 使用缓存匹配器
-    const matched = this.getCachedMatch(text)
-    if (matched) return matched
-    
-    if (keyGenerator) return keyGenerator(text)
-    return false
-  }
-
-  /**
-   * 缓存匹配结果
-   */
-  private matchCache = new Map<string, string | false>()
-
-  private getCachedMatch(text: string): string | false {
-    if (this.matchCache.has(text)) {
-      return this.matchCache.get(text) || false
-    }
-    
-    const result = this.searchInLocale(text)
-    this.matchCache.set(text, result || false)
-    return result
-  }
-
-  /**
-   * 在locale中搜索文本
-   */
-  private searchInLocale(text: string): string | false {
-    const { locale } = this.context.options
-    const languages = Object.keys(locale)
-    
-    for (const lang of languages) {
-      const langData = locale[lang]
-      if (!langData) continue
-      
-      const result = this.searchInObject(langData, text)
-      if (result) {
-        return result
-      }
-    }
-    return false
-  }
-
-  /**
-   * 递归搜索对象
-   */
-  private searchInObject(obj: any, value: string, currentPath: string = ''): string | false {
-    for (const [key, val] of Object.entries(obj)) {
-      const newPath = currentPath ? `${currentPath}.${key}` : key
-      
-      if (val === value) {
-        return newPath
-      }
-      else if (typeof val === 'object' && val !== null) {
-        const result = this.searchInObject(val, value, newPath)
-        if (result) {
-          return result
-        }
-      }
-    }
-    return false
+    return this.context.matcher.match(text)
   }
 } 

@@ -3,7 +3,7 @@ import traverse, { NodePath } from '@babel/traverse'
 import * as t from '@babel/types'
 import { generate } from '@babel/generator'
 import { getMatchedMsgPath } from '../utils'
-import { createError, ErrorCode } from '../utils/errors'
+import { createError, ErrorCode } from '../core/errors'
 import type { LocaleConfig, TransformFormat, TextMatch, TransformResult } from '../types'
 
 const DEFAULT_REACT_FORMAT: TransformFormat = {

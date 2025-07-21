@@ -1,20 +1,20 @@
 import path from 'path'
 import fs from 'fs'
-import { ConfigManager } from '../config'
+import { UnifiedConfigManager } from '../config/unified'
 import { transformSFC } from '../core/transform'
 import { globalMiddlewareManager } from '../core/middleware'
 import { getBuiltinMiddlewares } from '../core/middleware/builtin'
-import type { CLIConfig } from '../config/types'
+import type { CLIConfig } from '../config/unified'
 
 /**
  * 新的CLI工具类
  */
 export class I18nCraftCLI {
-  private configManager: ConfigManager
+  private configManager: UnifiedConfigManager
   private initialized = false
 
   constructor(config?: Partial<CLIConfig>) {
-    this.configManager = new ConfigManager(config)
+    this.configManager = new UnifiedConfigManager(config)
   }
 
   /**

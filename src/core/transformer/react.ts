@@ -4,7 +4,7 @@ import * as t from '@babel/types'
 import { generate } from '@babel/generator'
 import { BaseTransformer } from './base'
 import type { TransformOptions, TransformResult, TextMatch } from '../../types'
-import { createError, ErrorCode } from '../../utils/errors'
+import { createError, ErrorCode } from '../errors'
 
 export class ReactTransformer extends BaseTransformer {
   private transformFormat: any

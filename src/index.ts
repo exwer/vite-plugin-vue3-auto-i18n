@@ -27,12 +27,25 @@ export {
   transform
 } from './core/transformer'
 
-// 配置管理
+// 统一配置管理
 export { 
-  ConfigManager,
-  validateConfig,
-  getDefaultConfig
-} from './config'
+  UnifiedConfigManager,
+  ConfigValidator,
+  DEFAULT_CONFIG
+} from './config/unified'
+
+// 统一错误处理
+export { 
+  I18nCraftError, 
+  ErrorCode, 
+  createError, 
+  formatErrorWithSuggestions,
+  ErrorHandler,
+  errorHandler
+} from './core/errors'
+
+// 文本匹配器
+export { TextMatcher } from './core/matcher'
 
 // 中间件系统
 export {
@@ -68,6 +81,5 @@ export { createWebpackPlugin, I18nCraftWebpackPlugin } from './plugins/webpack'
 // 工具函数
 export { getMatchedMsgPath, formatKey } from './utils'
 
-// 错误处理
-export { I18nCraftError, ErrorCode, createError, formatErrorWithSuggestions } from './utils/errors'
-export { ErrorHandler, safeFileOperation, validateFilePath, validateDirectoryPath } from './utils/error-handler'
+// 文件操作工具
+export { validateFilePath, validateDirectoryPath } from './core/errors'
