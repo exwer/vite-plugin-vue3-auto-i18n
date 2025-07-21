@@ -1,86 +1,65 @@
-import type { LocaleConfig, TransformOptions } from '../types'
+import type { LocaleConfig } from '../types'
 
 /**
  * 统一的文本匹配器
+ * 基于locale配置进行文本匹配，返回对应的i18n key
  */
 export class TextMatcher {
   private matchCache = new Map<string, string | false>()
   private locale: LocaleConfig
-  private customMatcher?: TransformOptions['customMatcher']
-  private keyGenerator?: TransformOptions['keyGenerator']
 
-  constructor(locale: LocaleConfig, options: Pick<TransformOptions, 'customMatcher' | 'keyGenerator'> = {}) {
+  constructor(locale: LocaleConfig) {
     this.locale = locale
-    this.customMatcher = options.customMatcher
-    this.keyGenerator = options.keyGenerator
   }
 
   /**
-   * 匹配或生成键
+   * 匹配文本并返回对应的i18n key
    */
   match(text: string): string | false {
-    // 首先尝试自定义匹配器
-    if (this.customMatcher) {
-      const result = this.customMatcher(text)
-      if (result) return result
-    }
-    
-    // 使用缓存匹配器
-    const matched = this.getCachedMatch(text)
-    if (matched) return matched
-    
-    // 最后尝试键生成器
-    if (this.keyGenerator) return this.keyGenerator(text)
-    
-    return false
-  }
-
-  /**
-   * 获取缓存的匹配结果
-   */
-  private getCachedMatch(text: string): string | false {
+    // 检查缓存
     if (this.matchCache.has(text)) {
-      return this.matchCache.get(text) || false
+      return this.matchCache.get(text)!
     }
-    
-    const result = this.searchInLocale(text)
-    this.matchCache.set(text, result || false)
-    return result
+
+    // 清理文本
+    const cleanText = text.trim()
+    if (!cleanText) {
+      this.matchCache.set(text, false)
+      return false
+    }
+
+    // 在locale中查找匹配
+    const key = this.findKeyInLocale(cleanText)
+    this.matchCache.set(text, key)
+    return key
   }
 
   /**
-   * 在locale中搜索文本
+   * 在locale配置中查找文本对应的key
    */
-  private searchInLocale(text: string): string | false {
-    const languages = Object.keys(this.locale)
-    
-    for (const lang of languages) {
-      const langData = this.locale[lang]
-      if (!langData) continue
-      
-      const result = this.searchInObject(langData, text)
-      if (result) {
-        return result
-      }
+  private findKeyInLocale(text: string): string | false {
+    for (const lang of Object.keys(this.locale)) {
+      const found = this.searchInObject(this.locale[lang], text, '')
+      if (found) return found
     }
     return false
   }
 
   /**
-   * 递归搜索对象
+   * 递归搜索对象中的文本
    */
-  private searchInObject(obj: any, value: string, currentPath: string = ''): string | false {
-    for (const [key, val] of Object.entries(obj)) {
-      const newPath = currentPath ? `${currentPath}.${key}` : key
-      
-      if (val === value) {
-        return newPath
-      }
-      else if (typeof val === 'object' && val !== null) {
-        const result = this.searchInObject(val, value, newPath)
-        if (result) {
-          return result
+  private searchInObject(obj: any, text: string, prefix: string): string | false {
+    for (const key of Object.keys(obj)) {
+      const value = obj[key]
+      const currentKey = prefix ? `${prefix}.${key}` : key
+
+      if (typeof value === 'string') {
+        if (value === text) {
+          return currentKey
         }
+      } else if (typeof value === 'object' && value !== null) {
+        const found = this.searchInObject(value, text, currentKey)
+        if (found) return found
       }
     }
     return false
@@ -92,36 +71,29 @@ export class TextMatcher {
   clearCache(): void {
     this.matchCache.clear()
   }
+
+  /**
+   * 获取缓存统计
+   */
+  getCacheStats(): { size: number; maxSize: number } {
+    return {
+      size: this.matchCache.size,
+      maxSize: 1000 // 固定最大缓存大小
+    }
+  }
 }
 
 /**
- * 全局匹配器实例（用于向后兼容）
- */
-let globalMatcher: TextMatcher | null = null
-
-/**
- * 设置全局匹配器
- */
-export function setGlobalMatcher(matcher: TextMatcher): void {
-  globalMatcher = matcher
-}
-
-/**
- * 获取全局匹配器
- */
-export function getGlobalMatcher(): TextMatcher | null {
-  return globalMatcher
-}
-
-/**
- * 向后兼容的匹配函数
+ * 兼容性函数，用于向后兼容（废弃）
+ * @deprecated 请使用 TextMatcher 类
  */
 export function matchOrGenerateKey(
   locale: LocaleConfig,
-  customMatcher: TransformOptions['customMatcher'],
-  keyGenerator: TransformOptions['keyGenerator'],
+  customMatcher: any,
+  keyGenerator: any,
   text: string
 ): string | false {
-  const matcher = new TextMatcher(locale, { customMatcher, keyGenerator })
+  console.warn('matchOrGenerateKey is deprecated, use TextMatcher instead')
+  const matcher = new TextMatcher(locale)
   return matcher.match(text)
 } 

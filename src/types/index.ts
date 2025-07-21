@@ -1,3 +1,5 @@
+import { I18nProvider } from '../core/providers/base'
+
 // 基础类型定义
 export interface LocaleObject {
   [key: string]: string | LocaleObject
@@ -7,25 +9,10 @@ export interface LocaleConfig {
   [language: string]: LocaleObject
 }
 
-// 转换格式类型
-export type TransformFormatFunction = (key: string) => string
-export type TransformFormatString = string
-
-export interface TransformFormat {
-  template: TransformFormatFunction | TransformFormatString
-  script: TransformFormatFunction | TransformFormatString
-  interpolation: TransformFormatFunction | TransformFormatString
-}
-
 // 转换选项类型
 export interface TransformOptions {
   locale: LocaleConfig
-  enableScript?: boolean
-  enableTemplate?: boolean
-  customMatcher?: (text: string) => string | false
-  keyGenerator?: (text: string) => string
-  debug?: boolean
-  transformFormat?: TransformFormat
+  provider?: I18nProvider
 }
 
 // CLI 配置类型
@@ -34,10 +21,6 @@ export interface CLIConfig {
   outDir: string
   exts: string[]
   locale: LocaleConfig
-  transformFormat?: TransformFormat
-  enableScript?: boolean
-  enableTemplate?: boolean
-  debug?: boolean
 }
 
 // 匹配结果类型
@@ -62,7 +45,6 @@ export interface TransformResult {
 // 插件选项类型
 export interface PluginOptions {
   locale: LocaleConfig
-  transformFormat?: TransformFormat
 }
 
 // 文件处理结果类型

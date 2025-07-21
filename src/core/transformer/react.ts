@@ -3,25 +3,23 @@ import traverse, { NodePath } from '@babel/traverse'
 import * as t from '@babel/types'
 import { generate } from '@babel/generator'
 import { BaseTransformer } from './base'
+import { ReactI18nextProvider } from '../providers/react-i18next'
 import type { TransformOptions, TransformResult, TextMatch } from '../../types'
 import { createError, ErrorCode } from '../errors'
 
 export class ReactTransformer extends BaseTransformer {
-  private transformFormat: any
   private ast: any
 
   constructor(sourceCode: string, options: TransformOptions) {
     super(sourceCode, options)
-    this.transformFormat = options.transformFormat || this.getDefaultFormat()
+    // 如果没有提供provider，使用默认的ReactI18nextProvider
+    if (!this.context.provider) {
+      this.context.provider = ReactI18nextProvider
+    }
   }
 
   protected parse(): any {
     try {
-      // 检查是否包含JSX
-      if (!this.context.sourceCode.includes('<') || !this.context.sourceCode.includes('>')) {
-        return null
-      }
-
       this.ast = parse(this.context.sourceCode, {
         sourceType: 'module',
         plugins: ['jsx', 'typescript']
@@ -31,7 +29,7 @@ export class ReactTransformer extends BaseTransformer {
       throw createError(
         ErrorCode.PARSE_ERROR,
         'Failed to parse React JSX',
-        { originalError: error }
+        { originalError: error as Error }
       )
     }
   }
@@ -45,6 +43,7 @@ export class ReactTransformer extends BaseTransformer {
     // 使用箭头函数确保this绑定正确
     const isMatchedStr = (text: string) => this.isMatchedStr(text)
     const addMatch = (original: string, key: string, type: string) => this.addMatch(original, key, type)
+    const provider = this.context.provider
 
     // 遍历AST进行转换
     traverse(ast, {
@@ -55,15 +54,11 @@ export class ReactTransformer extends BaseTransformer {
           const key = isMatchedStr(text)
           if (key) {
             addMatch(text, key, 'jsx-text')
-            path.replaceWith(
-              t.jsxExpressionContainer(
-                t.callExpression(
-                  t.identifier('t'),
-                  [t.stringLiteral(key)]
-                )
-              )
-            )
-            needsTImport = true
+            if (provider) {
+              const translationAst = provider.createTranslationAst(key)
+              path.replaceWith(t.jsxExpressionContainer(translationAst))
+              needsTImport = true
+            }
           }
         }
       },
@@ -75,13 +70,11 @@ export class ReactTransformer extends BaseTransformer {
           const key = isMatchedStr(text)
           if (key) {
             addMatch(text, key, 'jsx-attribute')
-            path.node.value = t.jsxExpressionContainer(
-              t.callExpression(
-                t.identifier('t'),
-                [t.stringLiteral(key)]
-              )
-            )
-            needsTImport = true
+            if (provider) {
+              const translationAst = provider.createTranslationAst(key)
+              path.node.value = t.jsxExpressionContainer(translationAst)
+              needsTImport = true
+            }
           }
         }
       },
@@ -90,47 +83,36 @@ export class ReactTransformer extends BaseTransformer {
       StringLiteral(path: NodePath<t.StringLiteral>) {
         // 跳过 import ... from 'xxx'
         const parent = path.parent
-        if (parent && 'node' in parent && t.isImportDeclaration(parent.node)) {
+        if (parent && 'node' in parent && t.isImportDeclaration(parent.node as t.Node)) {
           return
         }
 
         const value = path.node.value
         const key = isMatchedStr(value)
         
-        if (key) {
+        if (key && provider) {
           addMatch(value, key, 'string-literal')
           
           // 检查是否在 useState 调用中
           if (
             parent && 
             'node' in parent &&
-            t.isCallExpression(parent.node) &&
+            t.isCallExpression(parent.node as t.Node) &&
             t.isIdentifier(parent.node.callee) &&
             parent.node.callee.name === 'useState'
           ) {
-            path.replaceWith(
-              t.callExpression(
-                t.identifier('t'),
-                [t.stringLiteral(key)]
-              )
-            )
+            // 对于 useState，使用基本的翻译AST
+            const translationAst = provider.createTranslationAst(key)
+            path.replaceWith(translationAst)
           } else {
-            // 其他情况包装在 useMemo 中
-            path.replaceWith(
-              t.callExpression(
-                t.identifier('useMemo'),
-                [
-                  t.arrowFunctionExpression(
-                    [],
-                    t.callExpression(
-                      t.identifier('t'),
-                      [t.stringLiteral(key)]
-                    )
-                  ),
-                  t.arrayExpression([t.identifier('t')])
-                ]
-              )
-            )
+            // 其他情况使用scoped翻译AST（如果可用）
+            if (provider.createScopedTranslationAst) {
+              const scopedAst = provider.createScopedTranslationAst(key)
+              path.replaceWith(scopedAst as any)
+            } else {
+              const translationAst = provider.createTranslationAst(key)
+              path.replaceWith(translationAst)
+            }
           }
           needsTImport = true
         }
@@ -142,14 +124,10 @@ export class ReactTransformer extends BaseTransformer {
         if (path.node.expressions.length === 0 && path.node.quasis.length === 1) {
           const text = path.node.quasis[0].value.raw
           const key = isMatchedStr(text)
-          if (key) {
+          if (key && provider) {
             addMatch(text, key, 'template-literal')
-            path.replaceWith(
-              t.callExpression(
-                t.identifier('t'),
-                [t.stringLiteral(key)]
-              )
-            )
+            const translationAst = provider.createTranslationAst(key)
+            path.replaceWith(translationAst)
             needsTImport = true
           }
         }
@@ -160,12 +138,10 @@ export class ReactTransformer extends BaseTransformer {
         path.node.elements.forEach((element, index) => {
           if (t.isStringLiteral(element)) {
             const key = isMatchedStr(element.value)
-            if (key) {
+            if (key && provider) {
               addMatch(element.value, key, 'array-element')
-              path.node.elements[index] = t.callExpression(
-                t.identifier('t'),
-                [t.stringLiteral(key)]
-              )
+              const translationAst = provider.createTranslationAst(key)
+              path.node.elements[index] = translationAst
               needsTImport = true
             }
           }
@@ -177,12 +153,10 @@ export class ReactTransformer extends BaseTransformer {
         path.node.properties.forEach((prop) => {
           if (t.isObjectProperty(prop) && t.isStringLiteral(prop.value)) {
             const key = isMatchedStr(prop.value.value)
-            if (key) {
+            if (key && provider) {
               addMatch(prop.value.value, key, 'object-property')
-              prop.value = t.callExpression(
-                t.identifier('t'),
-                [t.stringLiteral(key)]
-              )
+              const translationAst = provider.createTranslationAst(key)
+              prop.value = translationAst
               needsTImport = true
             }
           }
@@ -212,22 +186,29 @@ export class ReactTransformer extends BaseTransformer {
       }
     })
 
-    // 如果需要 t 函数但没有导入，添加导入
-    if (needsTImport && !hasTImport) {
-      const importDeclaration = t.importDeclaration(
-        [
-          t.importSpecifier(
-            t.identifier('useTranslation'),
-            t.identifier('useTranslation')
-          ),
-          t.importSpecifier(
-            t.identifier('t'),
-            t.identifier('t')
-          )
-        ],
-        t.stringLiteral('react-i18next')
-      )
-      ast.program.body.unshift(importDeclaration)
+    // 如果需要 t 函数但没有导入，使用provider添加导入
+    if (needsTImport && !hasTImport && provider) {
+      const importDeclarations = provider.getImportDeclarations?.() || []
+      const hookDeclarations = provider.getHookDeclarations?.() || []
+      
+      // 添加import声明到文件开头
+      importDeclarations.forEach(importDecl => {
+        ast.program.body.unshift(importDecl)
+      })
+      
+      // 找到第一个非import语句的位置，插入hook声明
+      let insertIndex = 0
+      for (let i = 0; i < ast.program.body.length; i++) {
+        if (!t.isImportDeclaration(ast.program.body[i])) {
+          insertIndex = i
+          break
+        }
+      }
+      
+      // 在找到的位置插入hook声明
+      hookDeclarations.forEach((hookDecl, index) => {
+        ast.program.body.splice(insertIndex + index, 0, hookDecl)
+      })
     }
 
     return ast

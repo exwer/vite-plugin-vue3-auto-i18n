@@ -26,6 +26,9 @@ importers:
       '@vue/compiler-sfc':
         specifier: ^3.2.33
         version: 3.5.17
+      magic-string:
+        specifier: ^0.30.17
+        version: 0.30.17
       recast:
         specifier: ^0.23.11
         version: 0.23.11

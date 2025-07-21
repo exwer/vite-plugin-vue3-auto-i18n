@@ -1,7 +1,7 @@
 import recast from 'recast'
-import type { TransformFormat } from '../types'
-import { DEFAULT_TRANSFORM_FORMAT } from '../core/transform'
-import { formatKey } from '../utils'
+import type { TransformFormat } from '../../types'
+import { DEFAULT_TRANSFORM_FORMAT } from '../transform'
+import { formatKey } from '../../utils'
 
 export interface ScriptTransformOptions {
   isMatchedStr: (text: string) => string | false
@@ -666,19 +666,4 @@ function transformAST(
   }
 
   return ast
-}
-
-// 为了保持向后兼容，保留原来的 babel 插件接口
-export default function(
-  babel: any,
-  { isMatchedStr }: { isMatchedStr: (target: string) => false | string },
-): any {
-  return {
-    visitor: {
-      Program(path: any) {
-        // 这里不再使用 babel 转换，而是抛出错误提示使用新的 API
-        throw new Error('Please use transformScript() function instead of babel plugin')
-      },
-    },
-  }
-}
+} 

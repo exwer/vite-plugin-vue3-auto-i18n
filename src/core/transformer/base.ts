@@ -1,6 +1,7 @@
 import type { TransformOptions, TransformResult, TextMatch } from '../../types'
 import { createError, ErrorCode } from '../errors'
 import { TextMatcher } from '../matcher'
+import { I18nProvider } from '../providers/base'
 
 export interface TransformerContext {
   sourceCode: string
@@ -8,6 +9,7 @@ export interface TransformerContext {
   matches: TextMatch[]
   errors: Error[]
   matcher: TextMatcher
+  provider?: I18nProvider
 }
 
 export abstract class BaseTransformer {
@@ -19,10 +21,8 @@ export abstract class BaseTransformer {
       options,
       matches: [],
       errors: [],
-      matcher: new TextMatcher(options.locale, {
-        customMatcher: options.customMatcher,
-        keyGenerator: options.keyGenerator
-      })
+      matcher: new TextMatcher(options.locale),
+      provider: options.provider
     }
   }
 
@@ -33,7 +33,7 @@ export abstract class BaseTransformer {
     try {
       this.validateInput()
       const ast = this.parse()
-      const transformedAst = this.transformAST(ast)
+      const transformedAst = await this.transformAST(ast)
       const result = this.generate(transformedAst)
       
       return {
@@ -103,7 +103,7 @@ export abstract class BaseTransformer {
   /**
    * 添加匹配结果
    */
-  protected addMatch(original: string, key: string, type: string, line?: number, column?: number): void {
+  public addMatch(original: string, key: string, type: string, line?: number, column?: number): void {
     this.context.matches.push({
       original,
       key,
@@ -116,7 +116,7 @@ export abstract class BaseTransformer {
   /**
    * 检查文本是否匹配
    */
-  protected isMatchedStr(text: string): string | false {
+  public isMatchedStr(text: string): string | false {
     return this.context.matcher.match(text)
   }
 } 

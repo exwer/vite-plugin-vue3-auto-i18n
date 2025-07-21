@@ -1,579 +1,269 @@
-# i18ncraft
+# i18nCraft 🚀
 
-[![NPM version](https://img.shields.io/npm/v/i18ncraft?color=a1b858&label=)](https://www.npmjs.com/package/i18ncraft)
-[![License](https://img.shields.io/npm/l/i18ncraft)](https://github.com/exwer/i18ncraft/blob/main/LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.8+-blue.svg)](https://www.typescriptlang.org/)
+> 🌍 Professional internationalization automation tool with intelligent batch text transformation and enterprise-grade error handling.
 
-> 🚀 **i18ncraft** - Professional internationalization automation tool with intelligent batch text transformation and enterprise-grade error handling.
+[![NPM version](https://img.shields.io/npm/v/i18ncraft.svg)](https://npmjs.com/package/i18ncraft)
+[![License](https://img.shields.io/npm/l/i18ncraft.svg)](LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)](https://www.typescriptlang.org/)
 
-<div align="center">
-  <a href="README.zh.md">📖 中文文档</a>
-</div>
+## ✨ Features
 
-## ⚠️ Development Status
-
-**This project is currently under active development and is NOT recommended for production use.**
-
-- Core functionality is implemented and tested
-- API may change in future releases
-- Some advanced features are still in development
-
-## 📋 Table of Contents
-
-- [Quick Start](#-quick-start)
-- [Core Features](#-core-features)
-- [Installation](#-installation)
-- [Usage](#-usage)
-- [Configuration](#-configuration)
-- [Architecture](#-architecture)
-- [API Reference](#-api-reference)
-- [TODO List](#-todo-list)
-- [Contributing](#-contributing)
+- 🎯 **Smart Text Recognition** - Advanced pattern matching with intelligent text extraction
+- 🔧 **Multi-Framework Support** - Vue.js, React, and vanilla JavaScript projects
+- 🚀 **Enhanced Vue Template Support** - Comprehensive Vue syntax compatibility including directives, dynamic attributes, and complex expressions
+- 🧩 **Modular Architecture** - Extensible transformer and provider system
+- 📦 **Multiple Integration Options** - CLI, programmatic API, and build tool plugins
+- 🛡️ **Enterprise-Grade Error Handling** - Comprehensive error recovery and reporting
+- ⚡ **High Performance** - Optimized string matching with intelligent caching
+- 🎨 **Flexible Configuration** - Customizable transformation rules and output formats
 
 ## 🚀 Quick Start
 
-### 1. Installation
+### Installation
 
 ```bash
-npm install -D i18ncraft
+npm install i18ncraft
+# or
+pnpm add i18ncraft
+# or
+yarn add i18ncraft
 ```
 
-### 2. Create Configuration
+### Basic Usage
 
-```js
-// i18ncraft.config.js
-module.exports = {
-  scanDir: 'src',
-  outDir: 'i18n_out',
-  exts: ['.vue'],
-  locale: {
-    en: {
-      message: { 
-        hello: 'Hello World', 
-        welcome: 'Welcome to our application',
-        buttons: {
-          submit: 'Submit',
-          cancel: 'Cancel',
-          save: 'Save Changes'
-        },
-        errors: {
-          required: 'This field is required',
-          invalid: 'Invalid input format'
-        }
-      }
-    },
-    zh: {
-      message: { 
-        hello: '你好世界', 
-        welcome: '欢迎使用我们的应用',
-        buttons: {
-          submit: '提交',
-          cancel: '取消',
-          save: '保存更改'
-        },
-        errors: {
-          required: '此字段为必填项',
-          invalid: '输入格式无效'
-        }
-      }
-    }
-  }
-}
-```
-
-### 3. Transform Your Files
-
-```bash
-npx i18ncraft
-```
-
-#### Vue SFC Example
-
-**Before transformation:**
-```vue
-<script setup>
-const pageTitle = 'hello'
-const buttonLabels = ['submit', 'cancel']
-const errorMessages = {
-  required: 'required',
-  invalid: 'invalid'
-}
-</script>
-
-<template>
-  <div class="app">
-    <h1>{{ pageTitle }}</h1>
-    <p>welcome</p>
-    
-    <form>
-      <input placeholder="Enter your name" />
-      <div class="error">{{ errorMessages.required }}</div>
-      
-      <div class="buttons">
-        <button>{{ buttonLabels[0] }}</button>
-        <button>{{ buttonLabels[1] }}</button>
-      </div>
-    </form>
-  </div>
-</template>
-```
-
-**After transformation:**
-```vue
-<script setup>
-import { computed } from 'vue'
-
-const pageTitle = computed(() => $t('message.hello'))
-const buttonLabels = [
-  computed(() => $t('message.buttons.submit')),
-  computed(() => $t('message.buttons.cancel'))
-]
-const errorMessages = computed(() => ({
-  required: $t('message.errors.required'),
-  invalid: $t('message.errors.invalid')
-}))
-</script>
-
-<template>
-  <div class="app">
-    <h1>{{ pageTitle }}</h1>
-    <p>{{ $t('message.welcome') }}</p>
-    
-    <form>
-      <input :placeholder="$t('message.placeholder.name')" />
-      <div class="error">{{ errorMessages.required }}</div>
-      
-      <div class="buttons">
-        <button>{{ buttonLabels[0] }}</button>
-        <button>{{ buttonLabels[1] }}</button>
-      </div>
-    </form>
-  </div>
-</template>
-```
-
-#### React JSX Example
-
-**Before transformation:**
-```jsx
-import React from 'react'
-
-function App() {
-  const [title, setTitle] = useState('Hello World')
-  
-  return (
-    <div className="app">
-      <h1>{title}</h1>
-      <p>Welcome to our application</p>
-      
-      <form>
-        <input placeholder="Enter your name" />
-        <div className="error">This field is required</div>
-        
-        <div className="buttons">
-          <button>Submit</button>
-          <button>Cancel</button>
-        </div>
-      </form>
-    </div>
-  )
-}
-```
-
-**After transformation:**
-```jsx
-import React from 'react'
-import { useTranslation } from 'react-i18next'
-
-function App() {
-  const { t } = useTranslation()
-  const [title, setTitle] = useState(t('message.hello'))
-  
-  return (
-    <div className="app">
-      <h1>{title}</h1>
-      <p>{t('message.welcome')}</p>
-      
-      <form>
-        <input placeholder={t('message.placeholder.name')} />
-        <div className="error">{t('message.errors.required')}</div>
-        
-        <div className="buttons">
-          <button>{t('message.buttons.submit')}</button>
-          <button>{t('message.buttons.cancel')}</button>
-        </div>
-      </form>
-    </div>
-  )
-}
-```
-
-## ✨ Core Features
-
-- **Vue SFC Support**: Transform `<template>` and `<script setup>` sections
-- **React JSX Support**: Transform JSX text nodes, attributes, hooks, and expressions
-- **Plugin System**: Support for unplugin, Vite, and Webpack plugins
-- **Batch Processing**: Recursive directory scanning with preserved structure
-- **Smart Matching**: Automatic i18n key generation with nested object support
-- **Type Safety**: Complete TypeScript support
-- **Error Handling**: Detailed error messages and recovery suggestions
-- **Test Coverage**: 74+ test cases ensuring reliability
-- **Middleware System**: Extensible middleware for preprocessing and postprocessing
-- **Performance Optimization**: Caching mechanisms and optimized processing
-- **Modern Architecture**: Modular design with clear separation of concerns
-
-## 📦 Installation
-
-### Requirements
-
-- Node.js >= 16.0.0
-- TypeScript >= 4.5 (recommended)
-
-### Install
-
-```bash
-npm install -D i18ncraft
-```
-
-## 📖 Usage
-
-### Basic Configuration
-
-```js
-// i18ncraft.config.js
-module.exports = {
-  scanDir: 'src',           // Directory to scan
-  outDir: 'i18n_out',       // Output directory
-  exts: ['.vue'],           // File extensions
-  locale: {
-    en: {
-      message: {
-        hello: 'Hello World',
-        welcome: 'Welcome',
-        buttons: {
-          submit: 'Submit',
-          cancel: 'Cancel'
-        }
-      }
-    },
-    zh: {
-      message: {
-        hello: '你好世界',
-        welcome: '欢迎',
-        buttons: {
-          submit: '提交',
-          cancel: '取消'
-        }
-      }
-    }
-  }
-}
-```
-
-### Command Line
-
-```bash
-# Basic transformation
-npx i18ncraft
-
-# Preview mode
-npx i18ncraft --dry-run
-
-# Verbose logging
-npx i18ncraft --verbose
-```
-
-### Programmatic Usage
-
-#### Using the new CLI class
+#### Vue.js Projects
 
 ```typescript
-import { I18nCraftCLI } from 'i18ncraft'
+import { VueTransformer } from 'i18ncraft'
 
-const cli = new I18nCraftCLI({
-  scanDir: 'src',
-  outDir: 'i18n_out',
-  exts: ['.vue', '.jsx'],
+const transformer = new VueTransformer(sourceCode, {
   locale: {
     en: {
       message: {
         hello: 'Hello World',
-        welcome: 'Welcome'
+        welcome: 'Welcome to our app'
       }
     }
   }
 })
 
-const stats = await cli.batchTransform()
-console.log(`Processed ${stats.totalFiles} files`)
+const result = await transformer.transform()
+console.log(result.code) // Transformed code
+console.log(result.matches) // Found translations
 ```
 
-#### Using middleware system
+#### React Projects
 
 ```typescript
-import { useMiddleware, performanceMiddleware, loggingMiddleware } from 'i18ncraft'
+import { ReactTransformer } from 'i18ncraft'
 
-// Register built-in middlewares
-useMiddleware(performanceMiddleware)
-useMiddleware(loggingMiddleware)
-
-// Custom middleware
-useMiddleware({
-  name: 'custom',
-  priority: 5,
-  before: (source, options) => {
-    // Preprocessing logic
-    return source
-  },
-  after: (result, options) => {
-    // Postprocessing logic
-    return result
+const transformer = new ReactTransformer(sourceCode, {
+  locale: {
+    en: {
+      message: {
+        hello: 'Hello World',
+        welcome: 'Welcome to our app'
+      }
+    }
   }
 })
+
+const result = await transformer.transform()
 ```
 
-### Plugin System
+#### Vanilla JavaScript
 
-#### Unplugin
+```typescript
+import { JavaScriptTransformer } from 'i18ncraft'
 
-```js
-// vite.config.js or webpack.config.js
-import { createUnplugin } from 'i18ncraft/plugins'
-
-export default {
-  plugins: [
-    createUnplugin({
-      locale: {
-        en: {
-          message: {
-            hello: 'Hello World',
-            welcome: 'Welcome'
-          }
-        }
-      },
-      include: ['**/*.{vue,js,jsx,ts,tsx}'],
-      exclude: ['**/node_modules/**']
-    })
-  ]
-}
-```
-
-#### Vite Plugin
-
-```js
-// vite.config.js
-import { createVitePlugin } from 'i18ncraft/plugins'
-
-export default {
-  plugins: [
-    createVitePlugin({
-      locale: {
-        en: {
-          message: {
-            hello: 'Hello World',
-            welcome: 'Welcome'
-          }
-        }
+const transformer = new JavaScriptTransformer(sourceCode, {
+  locale: {
+    en: {
+      message: {
+        hello: 'Hello World'
       }
-    })
-  ]
-}
+    }
+  }
+})
+
+const result = await transformer.transform()
 ```
 
-#### Webpack Plugin
+### CLI Usage
 
-```js
-// webpack.config.js
-import { createWebpackPlugin } from 'i18ncraft/plugins'
+```bash
+# Transform Vue files
+i18ncraft transform --input src --output dist --locale ./locales/en.json
 
-export default {
-  plugins: [
-    createWebpackPlugin({
-      locale: {
-        en: {
-          message: {
-            hello: 'Hello World',
-            welcome: 'Welcome'
-          }
-        }
-      }
-    })
-  ]
-}
+# Batch process with custom configuration
+i18ncraft transform --config ./i18n.config.js
 ```
 
-## ⚙️ Configuration
+## 🎯 Vue Template Support
 
-| Option | Type | Required | Default | Description |
-|--------|------|----------|---------|-------------|
-| `scanDir` | `string` | ✅ | - | Scan directory path |
-| `outDir` | `string` | ✅ | - | Output directory path |
-| `exts` | `string[]` | ✅ | `['.vue']` | File extensions |
-| `locale` | `object` | ✅ | - | Locale configuration |
-| `enableScript` | `boolean` | ❌ | `true` | Enable script transformation |
-| `enableTemplate` | `boolean` | ❌ | `true` | Enable template transformation |
-| `debug` | `boolean` | ❌ | `false` | Enable debug logging |
-| `customMatcher` | `function` | ❌ | - | Custom text matching function |
-| `keyGenerator` | `function` | ❌ | - | Custom key generation function |
-| `transformFormat` | `object` | ❌ | - | Custom transformation format |
+i18nCraft provides comprehensive Vue template transformation support:
+
+### ✅ Fully Supported Syntax
+
+```vue
+<template>
+  <!-- Basic text interpolation -->
+  <h1>Hello World</h1>
+  
+  <!-- Static attributes -->
+  <input placeholder="Enter your name" />
+  
+  <!-- Dynamic attributes -->
+  <input :placeholder="'Enter your email'" />
+  <button :[dynamicAttr]="'Submit'">Click</button>
+  
+  <!-- Vue directives -->
+  <p v-text="'Hello World'"></p>
+  <div v-html="'<strong>Welcome</strong>'"></div>
+  
+  <!-- Component props with complex expressions -->
+  <my-component 
+    :config="{ text: 'Hello', label: 'Submit' }"
+    :items="['Loading...', 'Success!']"
+  />
+  
+  <!-- Conditional rendering -->
+  <p v-if="show">Welcome message</p>
+  
+  <!-- List rendering -->
+  <li v-for="item in items">Item text</li>
+  
+  <!-- Slots -->
+  <template #header>
+    <h2>Page Title</h2>
+  </template>
+</template>
+```
+
+### 🛡️ Intelligently Skipped
+
+```vue
+<template>
+  <!-- JavaScript expressions (correctly preserved) -->
+  <p>{{ user.name || 'Guest' }}</p>
+  <button @click="alert('Debug info')">Debug</button>
+  
+  <!-- Existing i18n calls (preserved) -->
+  <p>{{ $t('existing.key') }}</p>
+  <span>{{ $tc('message.item', count) }}</span>
+</template>
+```
 
 ## 🏗️ Architecture
 
-i18ncraft features a modern, modular architecture designed for extensibility and maintainability:
+i18nCraft follows a modular architecture with clear separation of concerns:
 
-### Core Components
-
-- **Transformer Architecture**: Abstract base classes for different file types
-- **Middleware System**: Extensible preprocessing and postprocessing hooks
-- **Configuration Management**: Type-safe configuration with validation
-- **CLI Tools**: Modern CLI class with batch processing capabilities
-
-### Built-in Middlewares
-
-- **Performance Monitoring**: Track transformation performance
-- **Logging**: Comprehensive logging and debugging
-- **Error Handling**: Graceful error handling and recovery
-- **Statistics**: Detailed transformation statistics
-- **Caching**: Smart caching for improved performance
-
-For detailed architecture information, see [ARCHITECTURE.md](./ARCHITECTURE.md).
-
-## 📚 API Reference
-
-### Core Functions
-
-```typescript
-// Transform Vue SFC
-import { transformSFC } from 'i18ncraft'
-const result = await transformSFC(sourceCode, options)
-
-// Create transformer
-import { createTransformer } from 'i18ncraft'
-const transformer = createTransformer(sourceCode, options)
-const result = await transformer.transform()
-
-// Use middleware
-import { useMiddleware, performanceMiddleware } from 'i18ncraft'
-useMiddleware(performanceMiddleware)
+```
+src/
+├── core/
+│   ├── transformer/        # Base transformer classes
+│   │   ├── base.ts         # Abstract base transformer
+│   │   ├── vue.ts          # Vue-specific transformer
+│   │   ├── react.ts        # React-specific transformer
+│   │   └── javascript.ts   # Vanilla JS transformer
+│   ├── providers/          # i18n library adapters
+│   │   ├── vue-i18n.ts     # Vue I18n provider
+│   │   ├── react-i18next.ts # React i18next provider
+│   │   └── vanilla-js.ts   # Vanilla JS providers
+│   ├── parsers/            # AST parsing utilities
+│   │   └── recast-parser.ts # JavaScript AST parser
+│   ├── middleware/         # Processing middleware
+│   └── matcher.ts          # Text matching engine
+├── plugins/                # Build tool integrations
+├── cli/                    # Command-line interface
+└── types/                  # TypeScript definitions
 ```
 
-### Configuration Management
+## 🔧 Configuration
+
+### Transform Options
 
 ```typescript
-import { ConfigManager } from 'i18ncraft'
-
-const configManager = new ConfigManager({
-  scanDir: 'src',
-  outDir: 'i18n_out',
-  exts: ['.vue'],
-  locale: { /* locale config */ }
-})
-
-const validation = configManager.validate()
-const config = configManager.getValidConfig()
+interface TransformOptions {
+  locale: LocaleConfig        // Locale configuration
+  provider?: I18nProvider     // Optional custom provider
+}
 ```
 
-### CLI Tools
+### CLI Configuration
+
+```javascript
+// i18n.config.js
+export default {
+  scanDir: './src',
+  outDir: './dist',
+  exts: ['.vue', '.js', '.ts', '.jsx', '.tsx'],
+  locale: {
+    en: {
+      // Your locale messages
+    }
+  }
+}
+```
+
+## 🧩 Custom Providers
+
+Create custom i18n providers for different libraries:
 
 ```typescript
-import { I18nCraftCLI } from 'i18ncraft'
+import { I18nProvider } from 'i18ncraft'
 
-const cli = new I18nCraftCLI(config)
-await cli.init()
-const stats = await cli.batchTransform()
+const customProvider: I18nProvider = {
+  createTranslationAst: (key: string) => {
+    // Return AST node for your i18n library
+    return t.callExpression(
+      t.identifier('translate'),
+      [t.stringLiteral(key)]
+    )
+  }
+}
 ```
 
-## 📋 TODO List
+## 📊 Performance
 
-### ✅ Implemented Features
-
-- [x] Vue SFC template transformation
-- [x] Vue SFC script transformation
-- [x] React JSX transformation
-- [x] Batch file processing
-- [x] Directory structure preservation
-- [x] Basic error handling
-- [x] TypeScript support
-- [x] CLI tool
-- [x] Configuration file support
-- [x] Test coverage (74+ tests)
-- [x] vue-i18n format support
-- [x] react-i18next format support
-- [x] Unplugin support
-- [x] Vite plugin
-- [x] Webpack plugin
-- [x] **Middleware system**
-- [x] **Performance optimization**
-- [x] **Modern architecture**
-- [x] **Caching mechanisms**
-- [x] **Configuration management**
-
-### 🚧 In Development
-
-- [ ] Angular template transformation
-- [ ] Svelte component transformation
-- [ ] i18next format support
-- [ ] svelte-i18n format support
-- [ ] Custom transformation plugins
-- [ ] Rollup plugin
-- [ ] ESLint plugin
-- [ ] VS Code extension
-- [ ] Performance optimization for large projects
-- [ ] Incremental transformation
-- [ ] Git integration
-- [ ] CI/CD integration
-
-### 📋 Planned Features
-
-- [ ] Support for other file types (.js, .ts, .jsx, .tsx)
-- [ ] Support for other i18n libraries (react-intl, ngx-translate, etc.)
-- [ ] Support for other frameworks (Next.js, Nuxt.js, etc.)
-- [ ] Advanced key generation strategies
-- [ ] Translation management integration
-- [ ] Machine translation support
-- [ ] Translation memory
-- [ ] Pluralization support
-- [ ] Date/number formatting
-- [ ] RTL language support
+- **Smart Caching**: Intelligent caching of matched strings and transformations
+- **Single Pass**: Each transformation type processes content only once
+- **Optimized Regex**: Carefully crafted regular expressions for maximum efficiency
+- **Memory Efficient**: Minimal memory footprint with streaming processing
 
 ## 🤝 Contributing
+
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) for details.
 
 ### Development Setup
 
 ```bash
+# Clone the repository
 git clone https://github.com/exwer/i18ncraft.git
 cd i18ncraft
+
+# Install dependencies
 pnpm install
+
+# Run tests
 pnpm test
-pnpm typecheck
+
+# Build the project
+pnpm build
 ```
-
-### Code Standards
-
-- TypeScript
-- ESLint rules
-- Test coverage
-- Documentation updates
-
-### Architecture Guidelines
-
-- Follow the modular architecture
-- Use the middleware system for extensions
-- Maintain backward compatibility
-- Write comprehensive tests
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file for details
+MIT © [exwer](https://github.com/exwer)
 
-## 🔗 Links
+## 🙏 Acknowledgments
 
-- [GitHub Repository](https://github.com/exwer/i18ncraft)
-- [NPM Package](https://www.npmjs.com/package/i18ncraft)
-- [Issues](https://github.com/exwer/i18ncraft/issues)
-- [Architecture Documentation](./ARCHITECTURE.md)
-- [Refactor Summary](./REFACTOR_SUMMARY.md)
+- Vue.js team for the excellent compiler tools
+- React team for the transformation inspiration
+- The i18n community for valuable feedback and contributions
 
 ---
 
-**Made with ❤️ by [exwer](https://github.com/exwer)** 
+<div align="center">
+  <sub>Built with ❤️ by <a href="https://github.com/exwer">exwer</a></sub>
+</div> 
