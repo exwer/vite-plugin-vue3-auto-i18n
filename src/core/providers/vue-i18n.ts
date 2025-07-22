@@ -26,16 +26,9 @@ export const VueI18nProvider: I18nProvider = {
         [t.stringLiteral(key)]
       );
     }
-    // 对于script部分，使用computed包装的t函数
-    return t.callExpression(
-      t.identifier('computed'),
-      [
-        t.arrowFunctionExpression(
-          [],
-          t.callExpression(t.identifier('t'), [t.stringLiteral(key)])
-        )
-      ]
-    );
+    // 对于script部分，只返回简单的t()调用，不包装computed
+    // computed包装将在更高层级处理
+    return t.callExpression(t.identifier('t'), [t.stringLiteral(key)]);
   },
   
   getImportDeclarations() {

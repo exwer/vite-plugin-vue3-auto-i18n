@@ -71,6 +71,8 @@ import { useI18n } from 'vue-i18n'
 
 const { t } = useI18n()
 
+// ✅ Optimized: Only top-level variables wrapped with computed()
+// Inner strings use simple t() calls for better performance
 const message = computed(() => t('message.hello'))
 const buttonText = computed(() => t('message.clickMe'))
 </script>

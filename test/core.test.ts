@@ -76,11 +76,11 @@ describe('Core Components', () => {
         }
       }
 
-      // Script scope should use computed
+      // Script scope should use simple t() call (computed wrapping happens at higher level)
       const scriptAst = VueI18nProvider.createScopedTranslationAst!('greeting', 'script')
       expect(t.isCallExpression(scriptAst)).toBe(true)
       if (t.isCallExpression(scriptAst)) {
-        expect(t.isIdentifier(scriptAst.callee) && scriptAst.callee.name).toBe('computed')
+        expect(t.isIdentifier(scriptAst.callee) && scriptAst.callee.name).toBe('t')
       }
     })
 

@@ -43,12 +43,42 @@ export class RecastParser {
   }
 
   /**
-   * 遍历并转换AST中的字符串字面量
+   * 遍历并转换AST中的字符串字面量，并在顶层包装computed
    */
   transformStringLiterals(ast: any, options: RecastTransformOptions): void {
     const { isMatchedStr, addMatch, provider, scope } = options
     let needsImport = false
+    const variableDeclaratorsToWrap: any[] = []
 
+    // 第一遍：标记包含i18n字符串的变量声明
+    recast.visit(ast, {
+      visitVariableDeclarator: (path) => {
+        if (path.node.init) {
+          let hasI18nStrings = false
+          
+          // 检查这个变量初始化值是否包含i18n字符串
+          recast.visit(path.node.init, {
+            visitLiteral: (literalPath) => {
+              if (typeof literalPath.node.value === 'string') {
+                const key = isMatchedStr(literalPath.node.value)
+                if (key) {
+                  hasI18nStrings = true
+                }
+              }
+              return false
+            }
+          })
+          
+          if (hasI18nStrings) {
+            variableDeclaratorsToWrap.push(path)
+          }
+        }
+                // 继续遍历子节点
+        return false
+      }
+    })
+
+    // 第二遍：转换字符串字面量
     recast.visit(ast, {
       visitLiteral: (path) => {
         if (typeof path.node.value === 'string') {
@@ -65,6 +95,45 @@ export class RecastParser {
           }
         }
         return false
+      }
+    })
+
+    // 第三遍：包装变量声明
+    variableDeclaratorsToWrap.forEach(declaratorPath => {
+      const declarator = declaratorPath.node
+      if (declarator.init) {
+        // 检查是否是ref或reactive调用
+        if (declarator.init.type === 'CallExpression') {
+          const callee = declarator.init.callee
+          if (callee.type === 'Identifier' && (callee.name === 'ref' || callee.name === 'reactive')) {
+            // 替换ref/reactive为computed
+            declarator.init = {
+              type: 'CallExpression',
+              callee: { type: 'Identifier', name: 'computed' },
+              arguments: [
+                {
+                  type: 'ArrowFunctionExpression',
+                  params: [],
+                  body: declarator.init.arguments[0]
+                }
+              ]
+            }
+            return
+          }
+        }
+
+        // 普通变量声明包装computed
+        declarator.init = {
+          type: 'CallExpression',
+          callee: { type: 'Identifier', name: 'computed' },
+          arguments: [
+            {
+              type: 'ArrowFunctionExpression',
+              params: [],
+              body: declarator.init
+            }
+          ]
+        }
       }
     })
 
