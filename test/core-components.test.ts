@@ -1,55 +1,51 @@
-import { describe, expect, test } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
+import * as t from '@babel/types'
 import { TextMatcher } from '../src/core/matcher'
 import { VueI18nProvider } from '../src/core/providers/vue-i18n'
 import { ReactI18nextProvider } from '../src/core/providers/react-i18next'
-import * as t from '@babel/types'
+import type { LocaleConfig } from '../src/types'
 
 describe('Core Components', () => {
-  const locale = {
-    en: {
-      greeting: 'Hello',
-      message: {
-        success: 'Success!',
-        error: 'Error occurred'
-      },
-      nested: {
-        deep: {
-          value: 'Deep value'
+  describe('TextMatcher', () => {
+    let matcher: TextMatcher
+    let locale: LocaleConfig
+
+    beforeEach(() => {
+      locale = {
+        en: {
+          greeting: 'Hello',
+          nested: {
+            message: 'World'
+          }
         }
       }
-    }
-  }
-
-  describe('TextMatcher', () => {
-    test('should match text and return correct key path', () => {
-      const matcher = new TextMatcher(locale)
-      
-      expect(matcher.match('Hello')).toBe('greeting')
-      expect(matcher.match('Success!')).toBe('message.success')
-      expect(matcher.match('Error occurred')).toBe('message.error')
-      expect(matcher.match('Deep value')).toBe('nested.deep.value')
-      expect(matcher.match('Non-existent')).toBe(false)
+      matcher = new TextMatcher(locale)
     })
 
-    test('should handle empty or whitespace text', () => {
-      const matcher = new TextMatcher(locale)
-      
+    it('should match text and return correct key path', () => {
+      expect(matcher.match('Hello')).toBe('greeting')
+      expect(matcher.match('World')).toBe('nested.message')
+    })
+
+    it('should handle empty or whitespace text', () => {
       expect(matcher.match('')).toBe(false)
       expect(matcher.match('   ')).toBe(false)
-      expect(matcher.match('\n')).toBe(false)
-      expect(matcher.match('\t')).toBe(false)
+      expect(matcher.match('\n\t')).toBe(false)
     })
 
-    test('should be case sensitive', () => {
-      const matcher = new TextMatcher(locale)
-      
+    it('should be case sensitive', () => {
       expect(matcher.match('hello')).toBe(false) // lowercase
       expect(matcher.match('Hello')).toBe('greeting') // correct case
+    })
+
+    it('should return false for non-matching text', () => {
+      expect(matcher.match('Non-existent text')).toBe(false)
+      expect(matcher.match('Random string')).toBe(false)
     })
   })
 
   describe('VueI18nProvider', () => {
-    test('should create computed-wrapped translation AST for script', () => {
+    it('should create computed-wrapped translation AST for script by default', () => {
       const ast = VueI18nProvider.createTranslationAst('greeting')
       
       expect(t.isCallExpression(ast)).toBe(true)
@@ -64,7 +60,7 @@ describe('Core Components', () => {
       }
     })
 
-    test('should create scoped translation AST for template vs script', () => {
+    it('should create scoped translation AST for template vs script', () => {
       // Template scope should use $t
       const templateAst = VueI18nProvider.createScopedTranslationAst!('greeting', 'template')
       expect(t.isCallExpression(templateAst)).toBe(true)
@@ -84,7 +80,7 @@ describe('Core Components', () => {
       }
     })
 
-    test('should provide import and hook declarations', () => {
+    it('should provide import and hook declarations', () => {
       expect(VueI18nProvider.getImportDeclarations).toBeDefined()
       expect(VueI18nProvider.getHookDeclarations).toBeDefined()
       expect(VueI18nProvider.createScopedTranslationAst).toBeDefined()
@@ -98,38 +94,50 @@ describe('Core Components', () => {
   })
 
   describe('ReactI18nextProvider', () => {
-    test('should create correct translation AST', () => {
+    it('should create correct translation AST', () => {
       const ast = ReactI18nextProvider.createTranslationAst('greeting')
       
       expect(t.isCallExpression(ast)).toBe(true)
-      expect(t.isIdentifier(ast.callee) && ast.callee.name).toBe('t')
-      expect(ast.arguments).toHaveLength(1)
-      expect(t.isStringLiteral(ast.arguments[0]) && ast.arguments[0].value).toBe('greeting')
+      if (t.isCallExpression(ast)) {
+        expect(t.isIdentifier(ast.callee) && ast.callee.name).toBe('t')
+        expect(ast.arguments).toHaveLength(1)
+        expect(t.isStringLiteral(ast.arguments[0]) && ast.arguments[0].value).toBe('greeting')
+      }
     })
 
-    test('should create scoped translation AST with useMemo', () => {
+    it('should create scoped translation AST with useMemo', () => {
       const ast = ReactI18nextProvider.createScopedTranslationAst!('greeting')
       
       expect(t.isCallExpression(ast)).toBe(true)
       if (t.isCallExpression(ast)) {
         expect(t.isIdentifier(ast.callee) && ast.callee.name).toBe('useMemo')
         expect(ast.arguments).toHaveLength(2)
+        
+        // First argument should be arrow function
+        const arrowFunc = ast.arguments[0]
+        expect(t.isArrowFunctionExpression(arrowFunc)).toBe(true)
+        
+        // Second argument should be dependency array
+        const deps = ast.arguments[1]
+        expect(t.isArrayExpression(deps)).toBe(true)
       }
     })
 
-    test('should provide correct import declarations', () => {
+    it('should provide correct import declarations', () => {
       const imports = ReactI18nextProvider.getImportDeclarations!()
-      
       expect(imports).toHaveLength(1)
-      expect(t.isImportDeclaration(imports[0])).toBe(true)
-      expect(t.isStringLiteral(imports[0].source) && imports[0].source.value).toBe('react-i18next')
+      
+      // Should import useTranslation
+      const importSources = imports.map(imp => imp.source.value)
+      expect(importSources).toContain('react-i18next')
     })
 
-    test('should provide correct hook declarations', () => {
+    it('should provide correct hook declarations', () => {
       const hooks = ReactI18nextProvider.getHookDeclarations!()
-      
       expect(hooks).toHaveLength(1)
-      expect(t.isVariableDeclaration(hooks[0])).toBe(true)
+      
+      const hookDecl = hooks[0]
+      expect(t.isVariableDeclaration(hookDecl)).toBe(true)
     })
   })
 }) 
