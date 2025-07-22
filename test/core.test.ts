@@ -49,23 +49,51 @@ describe('Core Components', () => {
   })
 
   describe('VueI18nProvider', () => {
-    test('should create correct translation AST', () => {
+    test('should create computed-wrapped translation AST for script', () => {
       const ast = VueI18nProvider.createTranslationAst('greeting')
       
       expect(t.isCallExpression(ast)).toBe(true)
-      expect(t.isMemberExpression(ast.callee)).toBe(true)
-      if (t.isMemberExpression(ast.callee)) {
-        expect(t.isIdentifier(ast.callee.object) && ast.callee.object.name).toBe('this')
-        expect(t.isIdentifier(ast.callee.property) && ast.callee.property.name).toBe('$t')
+      if (t.isCallExpression(ast)) {
+        // Should be computed() call
+        expect(t.isIdentifier(ast.callee) && ast.callee.name).toBe('computed')
+        expect(ast.arguments).toHaveLength(1)
+        
+        // First argument should be arrow function
+        const arrowFunc = ast.arguments[0]
+        expect(t.isArrowFunctionExpression(arrowFunc)).toBe(true)
       }
-      expect(ast.arguments).toHaveLength(1)
-      expect(t.isStringLiteral(ast.arguments[0]) && ast.arguments[0].value).toBe('greeting')
     })
 
-    test('should not provide import or hook declarations', () => {
-      expect(VueI18nProvider.getImportDeclarations).toBeUndefined()
-      expect(VueI18nProvider.getHookDeclarations).toBeUndefined()
-      expect(VueI18nProvider.createScopedTranslationAst).toBeUndefined()
+    test('should create scoped translation AST for template vs script', () => {
+      // Template scope should use $t
+      const templateAst = VueI18nProvider.createScopedTranslationAst!('greeting', 'template')
+      expect(t.isCallExpression(templateAst)).toBe(true)
+      if (t.isCallExpression(templateAst)) {
+        expect(t.isMemberExpression(templateAst.callee)).toBe(true)
+        if (t.isMemberExpression(templateAst.callee)) {
+          expect(t.isThisExpression(templateAst.callee.object)).toBe(true)
+          expect(t.isIdentifier(templateAst.callee.property) && templateAst.callee.property.name).toBe('$t')
+        }
+      }
+
+      // Script scope should use computed
+      const scriptAst = VueI18nProvider.createScopedTranslationAst!('greeting', 'script')
+      expect(t.isCallExpression(scriptAst)).toBe(true)
+      if (t.isCallExpression(scriptAst)) {
+        expect(t.isIdentifier(scriptAst.callee) && scriptAst.callee.name).toBe('computed')
+      }
+    })
+
+    test('should provide import and hook declarations', () => {
+      expect(VueI18nProvider.getImportDeclarations).toBeDefined()
+      expect(VueI18nProvider.getHookDeclarations).toBeDefined()
+      expect(VueI18nProvider.createScopedTranslationAst).toBeDefined()
+      
+      const imports = VueI18nProvider.getImportDeclarations!()
+      expect(imports).toHaveLength(2)
+      
+      const hooks = VueI18nProvider.getHookDeclarations!()
+      expect(hooks).toHaveLength(1)
     })
   })
 

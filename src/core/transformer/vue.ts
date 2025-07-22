@@ -75,11 +75,12 @@ export class VueTransformer extends BaseTransformer {
     try {
       if (!this.context.provider) return scriptContent
 
-      // 使用RecastParser进行转换
+      // 使用RecastParser进行转换，指定为script作用域
       return await this.recastParser.transform(scriptContent, {
         isMatchedStr: (text: string) => this.isMatchedStr(text),
         addMatch: (original: string, key: string, type: string) => this.addMatch(original, key, 'script-literal'),
-        provider: this.context.provider
+        provider: this.context.provider,
+        scope: 'script'
       })
     } catch (error) {
       this.handleError(error)

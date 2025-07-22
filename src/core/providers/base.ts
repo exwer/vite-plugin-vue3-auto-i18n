@@ -13,11 +13,12 @@ export interface I18nProvider {
   createTranslationAst(key: string): t.CallExpression;
 
   /**
-   * (可选) 为 React 组件创建包裹了 Hook 的翻译节点
+   * (可选) 为不同作用域创建翻译节点
    * @param key i18n key
-   * @returns Babel AST 节点, e.g., useMemo(() => t('key'), [t])
+   * @param scope 作用域信息 ('template' | 'script' | undefined)
+   * @returns Babel AST 节点, e.g., computed(() => $t('key')) for Vue script, $t('key') for Vue template
    */
-  createScopedTranslationAst?(key: string): t.Node;
+  createScopedTranslationAst?(key: string, scope?: string): t.Node;
 
   /**
    * (可选) 获取需要注入到文件头部的 import 声明

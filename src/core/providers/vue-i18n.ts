@@ -3,10 +3,64 @@ import * as t from '@babel/types';
 
 export const VueI18nProvider: I18nProvider = {
   createTranslationAst(key: string) {
+    // 默认为script部分，需要包装在computed中以实现响应式
     return t.callExpression(
-      t.memberExpression(t.identifier('this'), t.identifier('$t')),
-      [t.stringLiteral(key)]
+      t.identifier('computed'),
+      [
+        t.arrowFunctionExpression(
+          [],
+          t.callExpression(
+            t.memberExpression(t.identifier('t'), t.identifier('value')),
+            [t.stringLiteral(key)]
+          )
+        )
+      ]
     );
   },
-  // Vue 的 Provider 相对简单，暂时不需要其他方法
+  
+  createScopedTranslationAst(key: string, scope?: string) {
+    // 对于template部分，直接使用$t调用
+    if (scope === 'template') {
+      return t.callExpression(
+        t.memberExpression(t.thisExpression(), t.identifier('$t')),
+        [t.stringLiteral(key)]
+      );
+    }
+    // 对于script部分，使用computed包装的t函数
+    return t.callExpression(
+      t.identifier('computed'),
+      [
+        t.arrowFunctionExpression(
+          [],
+          t.callExpression(t.identifier('t'), [t.stringLiteral(key)])
+        )
+      ]
+    );
+  },
+  
+  getImportDeclarations() {
+    return [
+      t.importDeclaration(
+        [t.importSpecifier(t.identifier('computed'), t.identifier('computed'))],
+        t.stringLiteral('vue')
+      ),
+      t.importDeclaration(
+        [t.importSpecifier(t.identifier('useI18n'), t.identifier('useI18n'))],
+        t.stringLiteral('vue-i18n')
+      )
+    ];
+  },
+  
+  getHookDeclarations() {
+    return [
+      t.variableDeclaration('const', [
+        t.variableDeclarator(
+          t.objectPattern([
+            t.objectProperty(t.identifier('t'), t.identifier('t'))
+          ]),
+          t.callExpression(t.identifier('useI18n'), [])
+        )
+      ])
+    ];
+  }
 }; 

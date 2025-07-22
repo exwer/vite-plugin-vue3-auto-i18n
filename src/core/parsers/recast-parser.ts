@@ -9,6 +9,7 @@ export interface RecastTransformOptions {
   isMatchedStr: (text: string) => string | false
   addMatch: (original: string, key: string, type: string) => void
   provider: I18nProvider
+  scope?: string
 }
 
 /**
@@ -45,7 +46,7 @@ export class RecastParser {
    * 遍历并转换AST中的字符串字面量
    */
   transformStringLiterals(ast: any, options: RecastTransformOptions): void {
-    const { isMatchedStr, addMatch, provider } = options
+    const { isMatchedStr, addMatch, provider, scope } = options
     let needsImport = false
 
     recast.visit(ast, {
@@ -55,8 +56,10 @@ export class RecastParser {
           if (key) {
             addMatch(path.node.value, key, 'string-literal')
             
-            // 使用Provider创建AST节点
-            const translationAst = provider.createTranslationAst(key)
+            // 使用Provider创建AST节点，优先使用scoped版本
+            const translationAst = provider.createScopedTranslationAst 
+              ? provider.createScopedTranslationAst(key, scope)
+              : provider.createTranslationAst(key)
             path.replace(translationAst as any)
             needsImport = true
           }

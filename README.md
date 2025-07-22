@@ -66,8 +66,13 @@ const buttonText = 'Click me'
 </template>
 
 <script setup>
-const message = $t('message.hello')
-const buttonText = $t('message.clickMe')
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
+const message = computed(() => t('message.hello'))
+const buttonText = computed(() => t('message.clickMe'))
 </script>
 ```
 
