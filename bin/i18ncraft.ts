@@ -1,8 +1,15 @@
 #!/usr/bin/env node
 import path from 'path'
 import fs from 'fs'
-import { transformSFC } from '../src/core/transform'
-import type { CLIConfig, ValidationResult } from '../src/types'
+import { createTransformer } from '../src/core/transformers'
+import type { LocaleConfig } from '../src/types'
+
+interface SimpleCLIConfig {
+  scanDir: string
+  outDir: string
+  exts: string[]
+  locale: LocaleConfig
+}
 
 // 1. 查找并加载配置文件
 const CONFIG_FILES = [
@@ -21,28 +28,37 @@ function findConfigFile(): string | null {
   return null
 }
 
-function loadConfig(configPath: string): CLIConfig {
+async function loadConfig(configPath: string): Promise<SimpleCLIConfig> {
   if (configPath.endsWith('.json')) {
     return JSON.parse(fs.readFileSync(configPath, 'utf-8'))
   } else {
-    // 支持 js/cjs/mjs
-     
-    return require(configPath)
+    // 支持 js/cjs/mjs - 使用动态import
+    try {
+      // 清除缓存并动态导入
+      const configUrl = `file://${path.resolve(configPath)}?t=${Date.now()}`
+      const configModule = await import(configUrl)
+      return configModule.default || configModule
+    } catch (error) {
+      // Fallback to require for CommonJS configs
+      delete require.cache[require.resolve(configPath)]
+      return require(configPath)
+    }
   }
 }
 
-function validateConfig(config: any): ValidationResult {
+function validateConfig(config: any): { valid: boolean; errors: string[] } {
   const errors: string[] = []
-  const warnings: string[] = []
+
+  if (!config || typeof config !== 'object') {
+    errors.push('i18ncraft: config must be an object')
+    return { valid: false, errors }
+  }
 
   if (!config.scanDir || typeof config.scanDir !== 'string') {
     errors.push('i18ncraft: config.scanDir is required and must be a string')
   }
   if (!config.exts || !Array.isArray(config.exts) || config.exts.length === 0) {
     errors.push('i18ncraft: config.exts is required and must be a non-empty array')
-  }
-  if (!config.exts.every((ext: string) => ext === '.vue')) {
-    errors.push('i18ncraft: currently only .vue files are supported in exts')
   }
   if (!config.outDir || typeof config.outDir !== 'string') {
     errors.push('i18ncraft: config.outDir is required and must be a string')
@@ -52,95 +68,62 @@ function validateConfig(config: any): ValidationResult {
   if (!config.locale || typeof config.locale !== 'object' || Array.isArray(config.locale)) {
     errors.push('i18ncraft: config.locale is required and must be an object with language keys')
   }
-  
-  // 验证 locale 结构
-  if (config.locale) {
-    const localeKeys = Object.keys(config.locale)
-    if (localeKeys.length === 0) {
-      errors.push('i18ncraft: config.locale must contain at least one language')
-    }
-    
-    // 验证每个语言的数据是对象
-    for (const lang of localeKeys) {
-      if (!config.locale[lang] || typeof config.locale[lang] !== 'object') {
-        errors.push(`i18ncraft: config.locale.${lang} must be an object`)
-      }
-    }
-  }
-  
-  // 验证 transformFormat（如果提供）
-  if (config.transformFormat) {
-    if (typeof config.transformFormat !== 'object') {
-      errors.push('i18ncraft: config.transformFormat must be an object')
-    } else {
-      const requiredKeys = ['template', 'script', 'interpolation']
-      for (const key of requiredKeys) {
-        if (!config.transformFormat[key]) {
-          errors.push(`i18ncraft: config.transformFormat.${key} is required`)
-        } else {
-          const format = config.transformFormat[key]
-          if (typeof format !== 'string' && typeof format !== 'function') {
-            errors.push(`i18ncraft: config.transformFormat.${key} must be a string or function`)
-          }
-        }
-      }
-    }
-  }
 
   return {
     valid: errors.length === 0,
-    errors,
-    warnings
+    errors
   }
 }
 
-// 递归扫描目录下所有 .vue 文件
-function scanVueFiles(dir: string, fileList: string[] = []): string[] {
+// 递归扫描目录下的支持文件
+function scanFiles(dir: string, exts: string[], fileList: string[] = []): string[] {
   const files = fs.readdirSync(dir)
   for (const file of files) {
     const fullPath = path.join(dir, file)
     const stat = fs.statSync(fullPath)
     if (stat.isDirectory()) {
-      scanVueFiles(fullPath, fileList)
-    } else if (stat.isFile() && file.endsWith('.vue')) {
+      scanFiles(fullPath, exts, fileList)
+    } else if (stat.isFile() && exts.some(ext => file.endsWith(ext))) {
       fileList.push(fullPath)
     }
   }
   return fileList
 }
 
-async function batchTransformVueFiles(config: CLIConfig): Promise<void> {
-  const { scanDir, outDir, locale, ...rest } = config
-  const files = scanVueFiles(scanDir)
+async function batchTransformFiles(config: SimpleCLIConfig): Promise<void> {
+  const { scanDir, outDir, exts, locale } = config
+  const files = scanFiles(scanDir, exts)
   
-  console.log(`[i18ncraft] Found ${files.length} .vue files to process`)
+  console.log(`[i18ncraft] Found ${files.length} files to process`)
   
   for (const file of files) {
     const relPath = path.relative(scanDir, file)
     const outPath = path.join(outDir, relPath)
     const outDirPath = path.dirname(outPath)
     fs.mkdirSync(outDirPath, { recursive: true })
+    
     const source = fs.readFileSync(file, 'utf-8')
     try {
-      const result = await transformSFC(source, { locale, ...rest })
-      fs.writeFileSync(outPath, result, 'utf-8')
-      console.log(`[i18ncraft] transformed: ${file} -> ${outPath}`)
+      const transformer = createTransformer(source, { locale })
+      const result = await transformer.transform()
+      fs.writeFileSync(outPath, result.code, 'utf-8')
+      console.log(`[i18ncraft] transformed: ${file} -> ${outPath} (${result.matches.length} matches)`)
     } catch (e) {
       console.error(`[i18ncraft] error transforming ${file}:`, e)
     }
   }
 }
 
-function main(): void {
+async function main(): Promise<void> {
   const configPath = findConfigFile()
   if (!configPath) {
     console.error('i18ncraft: No config file found. Please create i18ncraft.config.js in your project root.')
     process.exit(1)
   }
   
-  let config: CLIConfig
+  let config: SimpleCLIConfig
   try {
-    config = loadConfig(configPath)
+    config = await loadConfig(configPath)
   } catch (e) {
     console.error('i18ncraft: Failed to load config file:', e)
     process.exit(1)
@@ -153,13 +136,8 @@ function main(): void {
     process.exit(1)
   }
   
-  if (validation.warnings.length > 0) {
-    console.warn('i18ncraft: Config warnings:')
-    validation.warnings.forEach(warning => console.warn(`  ${warning}`))
-  }
-  
-  console.log('i18ncraft: Loaded config:', config)
-  batchTransformVueFiles(config)
+  console.log('i18ncraft: Starting transformation...')
+  await batchTransformFiles(config)
 }
 
 main() 

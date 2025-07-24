@@ -1,16 +1,16 @@
 import { createUnplugin as createUnpluginBase } from 'unplugin'
-import { transformSFC } from '../core/transform'
-import { transformReact } from './react'
+import { createTransformer } from '../core/transformers'
 import { createError, ErrorCode } from '../core/errors'
-import type { LocaleConfig, TransformFormat, PluginOptions } from '../types'
+import type { LocaleConfig } from '../types'
 
-export interface UnpluginOptions extends PluginOptions {
+export interface UnpluginOptions {
+  locale: LocaleConfig
   include?: string[]
   exclude?: string[]
 }
 
 export function createUnplugin(options: UnpluginOptions) {
-  const { locale, transformFormat, include = ['**/*.{vue,js,jsx,ts,tsx}'], exclude = ['**/node_modules/**'] } = options
+  const { locale, include = ['**/*.{vue,js,jsx,ts,tsx}'], exclude = ['**/node_modules/**'] } = options
 
   if (!locale) {
     throw createError(ErrorCode.MISSING_LOCALE, 'locale configuration is required')
@@ -66,33 +66,14 @@ export function createUnplugin(options: UnpluginOptions) {
 
   const transform = async (code: string, id: string) => {
     try {
-      // 根据文件扩展名选择转换器
-      if (id.endsWith('.vue')) {
-        const result = await transformSFC(code, {
-          locale,
-          transformFormat,
-          enableScript: true,
-          enableTemplate: true
-        })
-        return {
-          code: result,
-          map: null
-        }
-      } else if (id.endsWith('.jsx') || id.endsWith('.tsx') || 
-                 (id.endsWith('.js') && code.includes('jsx')) ||
-                 (id.endsWith('.ts') && code.includes('jsx'))) {
-        const result = transformReact(code, {
-          locale,
-          transformFormat
-        })
-        return {
-          code: result.code,
-          map: null
-        }
+      // 使用新的transformer架构
+      const transformer = createTransformer(code, { locale })
+      const result = await transformer.transform()
+      
+      return {
+        code: result.code,
+        map: null
       }
-
-      // 不支持的文件类型，返回null
-      return null
     } catch (error) {
       console.error(`[i18ncraft] Error transforming ${id}:`, error)
       // 返回原始代码，不中断构建

@@ -3,13 +3,9 @@ export type {
   TransformOptions, 
   LocaleConfig,
   LocaleObject,
-  CLIConfig,
   TextMatch,
   TransformResult
 } from './types'
-
-// 核心转换功能
-export { transformSFC } from './core/transform'
 
 // 新的转换器架构
 export { 
@@ -19,7 +15,7 @@ export {
   JavaScriptTransformer,
   createTransformer,
   transform
-} from './core/transformer'
+} from './core/transformers'
 
 // Parser 系统
 export { RecastParser } from './core/parsers'
@@ -46,10 +42,5 @@ export {
 // 文本匹配器
 export { TextMatcher } from './core/matcher'
 
-// React转换器
-export { transformReact } from './plugins/react'
-
 // 构建工具插件
 export { createUnplugin } from './plugins/unplugin'
-export { createVitePlugin } from './plugins/vite'
-export { createWebpackPlugin } from './plugins/webpack'

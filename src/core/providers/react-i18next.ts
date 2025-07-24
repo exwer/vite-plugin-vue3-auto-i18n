@@ -1,5 +1,5 @@
-import { I18nProvider } from './base';
-import * as t from '@babel/types';
+import { I18nProvider } from './base'
+import * as t from '@babel/types'
 
 export const ReactI18nextProvider: I18nProvider = {
   createTranslationAst(key: string) {

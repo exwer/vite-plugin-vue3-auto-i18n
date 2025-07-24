@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { ReactTransformer } from '../src/core/transformer/react'
+import { ReactTransformer } from '../src/core/transformers/react'
 import { ReactI18nextProvider } from '../src/core/providers/react-i18next'
 import type { TransformOptions } from '../src/types'
 

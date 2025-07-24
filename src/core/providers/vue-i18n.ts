@@ -1,5 +1,5 @@
-import { I18nProvider } from './base';
-import * as t from '@babel/types';
+import { I18nProvider } from './base'
+import * as t from '@babel/types'
 
 export const VueI18nProvider: I18nProvider = {
   createTranslationAst(key: string) {
@@ -57,3 +57,4 @@ export const VueI18nProvider: I18nProvider = {
     ];
   }
 }; 
+ 

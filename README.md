@@ -117,8 +117,8 @@ function App() {
     <div className="app">
       <h1>{title}</h1>
       <p>Welcome to our app</p>
-      <input placeholder="Enter your name" />
-      <button>Submit</button>
+        <input placeholder="Enter your name" />
+          <button>Submit</button>
       <div>Loading...</div>
     </div>
   )
@@ -157,10 +157,10 @@ const transformer = new ReactTransformer(sourceCode, {
         hello: 'Hello World',
         welcome: 'Welcome to our app',
         placeholder: 'Enter your name',
-        submit: 'Submit',
+          submit: 'Submit',
         loading: 'Loading...'
+        }
       }
-    }
   }
 })
 
@@ -200,16 +200,16 @@ function showMessage() {
 import { JavaScriptTransformer } from 'i18ncraft'
 
 const transformer = new JavaScriptTransformer(sourceCode, {
-  locale: {
-    en: {
-      message: {
-        hello: 'Hello World',
+      locale: {
+        en: {
+          message: {
+            hello: 'Hello World',
         goodbye: 'Goodbye',
         welcome: 'Welcome to our app'
+          }
+        }
       }
-    }
-  }
-})
+    })
 
 const result = await transformer.transform()
 ```
@@ -379,11 +379,11 @@ export default {
   scanDir: './src',
   outDir: './dist',
   exts: ['.vue', '.js', '.ts', '.jsx', '.tsx'],
-  locale: {
-    en: {
+      locale: {
+        en: {
       // Your locale messages
-    }
-  }
+          }
+        }
 }
 ```
 

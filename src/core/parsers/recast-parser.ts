@@ -1,6 +1,33 @@
 import recast from 'recast'
 import type { I18nProvider } from '../providers/base'
 
+/**
+ * 异步加载 parser，优先使用 recast typescript parser，fallback 到 babel parser
+ */
+async function loadParser(): Promise<any> {
+  // 尝试加载 recast typescript parser
+  try {
+    const typescriptParser = await import('recast/parsers/typescript')
+    return typescriptParser.default || typescriptParser
+  } catch (error) {
+            console.warn('[i18ncraft:RecastParser] Failed to load recast typescript parser, falling back to babel parser')
+    
+    // 尝试加载 babel parser 作为 fallback
+    try {
+      const { parse } = await import('@babel/parser')
+      return {
+        parse: (source: string) => parse(source, {
+          sourceType: 'module',
+          plugins: ['typescript', 'jsx']
+        })
+      }
+    } catch (babelError) {
+              console.error('[i18ncraft:RecastParser] Failed to load any parser:', error, babelError)
+      throw new Error('No suitable parser available')
+    }
+  }
+}
+
 export interface RecastParseOptions {
   parser?: any
 }
@@ -19,9 +46,16 @@ export interface RecastTransformOptions {
 export class RecastParser {
   private options: RecastParseOptions
 
+  private parserPromise: Promise<any>
+
   constructor(options: RecastParseOptions = {}) {
+    // 异步加载 parser
+    this.parserPromise = options.parser 
+      ? Promise.resolve(options.parser)
+      : loadParser()
+    
     this.options = {
-      parser: require('recast/parsers/typescript'),
+      parser: null, // 将在首次使用时异步设置
       ...options
     }
   }
@@ -29,7 +63,17 @@ export class RecastParser {
   /**
    * 解析JavaScript代码为AST
    */
-  parse(sourceCode: string): any {
+  async parse(sourceCode: string): Promise<any> {
+    // 确保 parser 已加载
+    if (!this.options.parser) {
+      this.options.parser = await this.parserPromise
+    }
+    
+    if (!this.options.parser || !this.options.parser.parse) {
+      console.error('[i18ncraft:RecastParser] Parser is undefined or invalid:', this.options.parser)
+      throw new Error('Parser is not properly initialized')
+    }
+    
     return recast.parse(sourceCode, {
       parser: this.options.parser
     })
@@ -169,12 +213,13 @@ export class RecastParser {
    */
   async transform(sourceCode: string, options: RecastTransformOptions): Promise<string> {
     try {
-      const ast = this.parse(sourceCode)
+      const ast = await this.parse(sourceCode)
       this.transformStringLiterals(ast, options)
       return this.generate(ast)
     } catch (error) {
-      console.error('[RecastParser] Transform error:', error)
+      console.error('[i18ncraft:RecastParser] Transform error:', error)
       return sourceCode // 返回原始代码作为fallback
     }
   }
 } 
+ 

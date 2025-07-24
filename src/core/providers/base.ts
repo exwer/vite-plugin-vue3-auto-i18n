@@ -1,4 +1,4 @@
-import * as t from '@babel/types';
+import * as t from '@babel/types'
 
 /**
  * 定义了 i18n 转换策略的接口
@@ -32,3 +32,4 @@ export interface I18nProvider {
    */
   getHookDeclarations?(): t.VariableDeclaration[];
 } 
+ 

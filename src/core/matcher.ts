@@ -20,13 +20,13 @@ export class TextMatcher {
     if (this.matchCache.has(text)) {
       return this.matchCache.get(text)!
     }
-
+    
     // 清理文本
     const cleanText = text.trim()
     if (!cleanText) {
       this.matchCache.set(text, false)
-      return false
-    }
+    return false
+  }
 
     // 在locale中查找匹配
     const key = this.findKeyInLocale(cleanText)
@@ -52,11 +52,11 @@ export class TextMatcher {
     for (const key of Object.keys(obj)) {
       const value = obj[key]
       const currentKey = prefix ? `${prefix}.${key}` : key
-
+      
       if (typeof value === 'string') {
         if (value === text) {
           return currentKey
-        }
+      }
       } else if (typeof value === 'object' && value !== null) {
         const found = this.searchInObject(value, text, currentKey)
         if (found) return found
@@ -72,7 +72,7 @@ export class TextMatcher {
     this.matchCache.clear()
   }
 
-  /**
+/**
    * 获取缓存统计
    */
   getCacheStats(): { size: number; maxSize: number } {
@@ -83,17 +83,4 @@ export class TextMatcher {
   }
 }
 
-/**
- * 兼容性函数，用于向后兼容（废弃）
- * @deprecated 请使用 TextMatcher 类
- */
-export function matchOrGenerateKey(
-  locale: LocaleConfig,
-  customMatcher: any,
-  keyGenerator: any,
-  text: string
-): string | false {
-  console.warn('matchOrGenerateKey is deprecated, use TextMatcher instead')
-  const matcher = new TextMatcher(locale)
-  return matcher.match(text)
-} 
+

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { VueTransformer } from '../src/core/transformer/vue'
+import { VueTransformer } from '../src/core/transformers/vue'
 import type { TransformOptions } from '../src/types'
 
 describe('Vue Transformer', () => {
@@ -385,3 +385,4 @@ const apiUrl = ref('/api/users')
     })
   })
 }) 
+ 

@@ -98,8 +98,8 @@ export class ReactTransformer extends BaseTransformer {
             parent && 
             'node' in parent &&
             t.isCallExpression(parent.node as t.Node) &&
-            t.isIdentifier(parent.node.callee) &&
-            parent.node.callee.name === 'useState'
+            t.isIdentifier((parent.node as t.CallExpression).callee) &&
+            ((parent.node as t.CallExpression).callee as t.Identifier).name === 'useState'
           ) {
             // 对于 useState，使用基本的翻译AST
             const translationAst = provider.createTranslationAst(key)
@@ -227,7 +227,7 @@ export class ReactTransformer extends BaseTransformer {
       throw createError(
         ErrorCode.TRANSFORM_ERROR,
         'Failed to generate React code',
-        { originalError: error }
+        { originalError: error as Error }
       )
     }
   }
@@ -240,3 +240,4 @@ export class ReactTransformer extends BaseTransformer {
     }
   }
 } 
+ 

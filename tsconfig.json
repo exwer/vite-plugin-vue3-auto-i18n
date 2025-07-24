@@ -1,15 +1,20 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "module": "CommonJS",
-    "lib": ["esnext","DOM"],
+    "target": "es2020",
+    "module": "ESNext",
+    "lib": ["es2020", "DOM"],
     "moduleResolution": "Node",
     "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "strict": true,
     "strictNullChecks": true,
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true
   },
-  "include": ["src/*.ts","src/**/*"]
+  "include": ["src/**/*", "bin/**/*"],
+  "exclude": ["node_modules", "dist", "test"]
 }
